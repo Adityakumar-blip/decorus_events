@@ -1,0 +1,42 @@
+import {Image, ImageBackground, StyleSheet, Text, View} from 'react-native';
+import React, {useEffect} from 'react';
+import SplashHide from 'react-native-splash-screen'; //import SplashScreen
+import {useNavigation} from '@react-navigation/native';
+
+const SplashScreen = () => {
+  const navigation = useNavigation();
+  const navigateScreen = () => {
+    setTimeout(() => {
+      navigation.navigate('LoginScreen');
+    }, 2000);
+  };
+
+  useEffect(() => {
+    navigateScreen();
+  }, []);
+
+  //setNavigationProps
+
+  return (
+    <View
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%',
+      }}>
+      <Image
+        source={require('../../Assets/Images/decorus_logo.png')}
+        style={{height: 100, width: 100}}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  Container: {
+    backgroundColor: 'blue',
+  },
+});
+
+export default SplashScreen;

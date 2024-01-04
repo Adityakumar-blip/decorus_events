@@ -1,3 +1,19 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "cSpell.words": [
+        "buttoncolor",
+        "cancle",
+        "CGST",
+        "Decorus",
+        "firestore",
+        "formik",
+        "GSTIN",
+        "HSNSAC",
+        "IGST",
+        "RNFS",
+        "RNHTM",
+        "RNQR",
+        "signin",
+        "unneccessory"
+    ]
 }

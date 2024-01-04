@@ -10,7 +10,7 @@ import {
 import {TeamStyle} from '../../../Utils/Styles/TeamsStyle';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
-import {GetAllRooms} from '../../../Utils/Slices/ChatSlice';
+import {GetAllRooms, getLastMessage} from '../../../Utils/Slices/ChatSlice';
 import firestore from '@react-native-firebase/firestore';
 
 const Teams = () => {
@@ -65,8 +65,9 @@ const Teams = () => {
   };
 
   useEffect(() => {
-    dispatch(GetAllRooms());
-  }, []);
+    dispatch(GetAllRooms(user?.userId));
+    dispatch(getLastMessage());
+  }, [user]);
 
   useEffect(() => {
     setRooms(allRooms);
@@ -77,11 +78,17 @@ const Teams = () => {
     //   return null;
     // }
     return (
-      <View style={{marginHorizontal: 15}}>
+      <View style={{marginHorizontal: 10}}>
         <TouchableOpacity
           onPress={() => handleGroupClick(item)}
           style={TeamStyle.TeamChat}>
-          <View>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 20,
+            }}>
             <Image
               source={{
                 uri: item?.imageUrl
@@ -92,17 +99,17 @@ const Teams = () => {
               width={60}
               style={{borderRadius: 10}}
             />
+            <View style={{marginVertical: 20}}>
+              <Text style={{color: 'black', fontSize: 17, fontWeight: '500'}}>
+                {item?.groupName}
+              </Text>
+              <Text style={{maxWidth: 250, color: 'black'}}>
+                {item?.fullName && `${item?.fullName}: ${item?.message}`}
+              </Text>
+            </View>
           </View>
-          <View style={{marginVertical: 20}}>
-            <Text style={{color: 'black', fontSize: 17, fontWeight: '500'}}>
-              {item?.groupName}
-            </Text>
-            <Text style={{maxWidth: 250, color: 'black'}}>
-              Shruti Sharma: You would like to contact me Ishan or else I will
-              call you.
-            </Text>
-          </View>
-          <View
+
+          {/* <View
             style={{
               backgroundColor: '#6583F3',
               width: 25,
@@ -113,8 +120,8 @@ const Teams = () => {
               alignItems: 'center',
               color: 'white',
             }}>
-            <Text style={{color: 'white'}}>5</Text>
-          </View>
+            <Text style={{color: 'white'}}>0</Text>
+          </View> */}
         </TouchableOpacity>
       </View>
     );

@@ -80,7 +80,7 @@ export default StyleSheet.create({
     letterSpacing: 0.9,
     color: 'white',
   },
-  LeftTextMessage : {
+  LeftTextMessage: {
     fontWeight: '500',
     letterSpacing: 0.9,
     color: 'black',
@@ -128,6 +128,7 @@ export default StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1,
     marginBottom: 2,
+    color: '#6583F3',
   },
   RecordingM: {
     padding: 20,

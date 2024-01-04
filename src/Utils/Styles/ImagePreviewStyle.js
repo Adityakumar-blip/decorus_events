@@ -30,6 +30,7 @@ export default StyleSheet.create({
     borderRadius: 15,
   },
   SendT: {
-    fontWeight: "600",
+    fontWeight: '600',
+    color: 'white',
   },
 });

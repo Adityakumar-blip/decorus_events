@@ -13,6 +13,7 @@ import {
   PermissionsAndroid,
   Modal,
   StyleSheet,
+  TextInput,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import storage from '@react-native-firebase/storage';
@@ -22,6 +23,9 @@ import useImagePicker from '../Components/useImagePicker';
 import {useState} from 'react';
 import ImagePreviewStyle from '../Utils/Styles/ImagePreviewStyle';
 import {SendMessageByRoom} from '../Utils/Slices/ChatSlice';
+import RNQRGenerator from 'rn-qr-generator';
+import {useEffect} from 'react';
+import {fontPixel, heightPixel, widthPixel} from '../Utils/constants';
 
 const ImagePreview = ({route}) => {
   const navigation = useNavigation();
@@ -30,6 +34,7 @@ const ImagePreview = ({route}) => {
   const {session, user} = useSelector(({AuthSlice}) => AuthSlice);
   const [paused, setPaused] = useState(true);
   const [showIcon, setShowIcon] = useState(false);
+  const [imageText, setImageText] = useState('');
 
   console.log('ROUTE PARAMS IN HEADER', route?.params);
 
@@ -41,15 +46,32 @@ const ImagePreview = ({route}) => {
 
   console.log('HEADER', header);
 
+  // const Decode = () => {
+  //   RNQRGenerator.detect({
+  //     uri: route.params.fileUri,
+  //   })
+  //     .then(response => {
+  //       const {values} = response;
+  //       console.log('Decoded result', response);
+  //     })
+  //     .catch(error => console.log('Cannot detect QR code in image', error));
+  // };
+
+  // useEffect(() => {
+  //   Decode();
+  // }, [route.params.fileUri]);
+
   const handleSendImage = url => {
     const messageObj = {
       message: url,
+      imgMessage: imageText ? imageText : '',
       senderId: user?.userId,
       image: user?.image ? user?.image : '',
       fullName: user?.fullName,
       roomPath,
       mediaType: 'image',
     };
+
     dispatch(SendMessageByRoom(messageObj)).then(() => {
       navigation.navigate('ChatScreen', {
         path: roomPath,
@@ -60,7 +82,7 @@ const ImagePreview = ({route}) => {
     clearFile();
   };
 
-  const handleImageUplaod = async () => {
+  const handleImageUpload = async () => {
     try {
       const {fileUri} = route?.params;
       const filename = `${session?.uid}_${Date.now()}`;
@@ -121,11 +143,32 @@ const ImagePreview = ({route}) => {
       </View>
       <View style={ImagePreviewStyle.SendM}>
         {type === 'send' && (
-          <TouchableOpacity
-            onPress={() => handleImageUplaod()}
-            style={ImagePreviewStyle.SendB}>
-            <Text style={ImagePreviewStyle.SendT}>Send</Text>
-          </TouchableOpacity>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              height: 50,
+            }}>
+            <TextInput
+              placeholder="Amount"
+              placeholderTextColor={'grey'}
+              style={styles.TextInputContainer}
+              onChange={text => setImageText(text?.nativeEvent?.text)}
+            />
+            <TextInput
+              placeholder="Remarks"
+              placeholderTextColor={'grey'}
+              style={styles.TextInputContainer}
+              onChange={text => setImageText(text?.nativeEvent?.text)}
+            />
+            <TouchableOpacity
+              onPress={() => handleImageUpload()}
+              style={ImagePreviewStyle.SendB}>
+              <Text style={ImagePreviewStyle.SendT}>Send</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     </View>
@@ -151,6 +194,16 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 24,
     cursor: 'pointer',
+  },
+  TextInputContainer: {
+    width: '35%',
+    height: heightPixel(110),
+    fontSize: fontPixel(30),
+    letterSpacing: 0.5,
+    color: 'black',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingLeft: 10,
   },
 });
 export default ImagePreview;

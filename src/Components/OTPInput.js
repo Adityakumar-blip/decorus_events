@@ -9,7 +9,7 @@ export default function OTPInput({
 }) {
   const count = inputCount;
   const [focusedInput, setFocusedInput] = useState(0);
-  const refs = [...Array(count).map(_ => createRef())];
+  const refs = [...Array(count)?.map(_ => createRef())];
   const [text, setText] = useState([...Array(count)]);
 
   return (
@@ -22,7 +22,7 @@ export default function OTPInput({
         },
         contentContainerStyle,
       ]}>
-      {[...Array(count)].map((item, index) => (
+      {[...Array(count)]?.map((item, index) => (
         <NumberInput
           key={'a' + index}
           inputStyle={inputStyle}
@@ -82,7 +82,7 @@ const NumberInput = React.memo(
             width: `${100 / count - 2}%`,
             maxWidth: 50,
             height: 50,
-            color : "black"
+            color: 'black',
           },
           inputStyle,
         ]}

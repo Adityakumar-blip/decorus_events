@@ -11,7 +11,7 @@ export const TeamStyle = StyleSheet.create({
   TeamChat: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
+    justifyContent: 'space-between',
     alignItems: 'center',
     gap: 20,
     borderBottomWidth: 0.5,

@@ -1,3 +1,4 @@
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Image,
@@ -6,12 +7,13 @@ import {
   PermissionsAndroid,
   Platform,
   TouchableOpacity,
+  ActivityIndicator, // Import ActivityIndicator for loader
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
 import storage from '@react-native-firebase/storage';
 import useImagePicker from './useImagePicker';
 import {useSelector} from 'react-redux';
 import {isURL} from '../Utils/constants';
+
 export default function ImageC({source, style, imageStyle, onChange, ...rest}) {
   const [imageUrl, setImageUrl] = useState(null);
   const [image, setImage] = useState(null);
@@ -19,6 +21,7 @@ export default function ImageC({source, style, imageStyle, onChange, ...rest}) {
   const [transferred, setTransferred] = useState(0);
   const {session} = useSelector(({AuthSlice}) => AuthSlice);
   const {choose, clearFile, filePath} = useImagePicker();
+
   const uploadImage = async () => {
     try {
       const {uri} = filePath;
@@ -32,22 +35,27 @@ export default function ImageC({source, style, imageStyle, onChange, ...rest}) {
       // set progress state
       task.on('state_changed', snapshot => {
         setTransferred(
-          Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 10000,
+          Math.round(snapshot.bytesTransferred / snapshot.totalBytes) * 100,
         );
       });
+
       try {
         await task;
         onChange(`groups/${filename}`);
         clearFile();
+        ToastAndroid.show('Image uploaded successfully!', ToastAndroid.SHORT);
       } catch (e) {
-        console.error(e);
+        console.error('Error uploading image:', e);
+        ToastAndroid.show('Error uploading image', ToastAndroid.SHORT);
+      } finally {
+        setUploading(false);
+        setImage(null);
       }
-      setUploading(false);
-      setImage(null);
     } catch (error) {
       console.error('UPLOAD ERROR', error);
     }
   };
+
   useEffect(() => {
     const requestMediaPermission = async () => {
       try {
@@ -83,7 +91,6 @@ export default function ImageC({source, style, imageStyle, onChange, ...rest}) {
   }, [filePath?.uri]);
 
   useEffect(() => {
-    console.log('SOURCE $$$$$$$$$$$$$$$$$$$$$$$$ ', source);
     if (source) {
       if (isURL(source)) {
         setImageUrl(source);
@@ -114,10 +121,18 @@ export default function ImageC({source, style, imageStyle, onChange, ...rest}) {
           }
           {...rest}
         />
+        {uploading && (
+          <ActivityIndicator
+            style={ImageStyle.loader}
+            size="large"
+            color="#4287f5"
+          />
+        )}
       </View>
     </TouchableOpacity>
   );
 }
+
 const ImageStyle = StyleSheet.create({
   ProfileImageView: {
     height: 60,
@@ -129,6 +144,7 @@ const ImageStyle = StyleSheet.create({
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
   },
   cancleIcon: {
     position: 'absolute',
@@ -139,7 +155,12 @@ const ImageStyle = StyleSheet.create({
   ImageProfile: {
     height: '100%',
     width: '100%',
-
     borderRadius: 100,
+  },
+  loader: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    zIndex: 2,
   },
 });

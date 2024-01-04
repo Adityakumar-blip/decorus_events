@@ -3,17 +3,24 @@ import firestore from '@react-native-firebase/firestore';
 import uuid from 'react-native-uuid';
 
 const chatCollection = firestore().collection('chats');
+const invoiceCollection = firestore().collection('invoices');
+const salaryCollection = firestore().collection('SalarySlips');
 
 const initialState = {
   allRooms: [],
   groupData: {},
   groupMedia: [],
+  allMedia: [],
+  allMembers: [],
+  lastMessage: [],
+  invoiceArray: [],
 };
 
 export const CreateChatRooms = createAsyncThunk(
   'CreateChatRooms',
   async values => {
     try {
+      console.log('group values', values);
       const groupCollection = chatCollection.doc();
       const groupId = groupCollection.id;
 
@@ -21,7 +28,6 @@ export const CreateChatRooms = createAsyncThunk(
         groupName: values?.groupName,
         groupId: groupId,
         imageUrl: values?.image,
-        user: values?.user,
       });
 
       const membersCollection = chatCollection
@@ -46,17 +52,29 @@ export const CreateChatRooms = createAsyncThunk(
   },
 );
 
-export const GetAllRooms = createAsyncThunk('GetAllRooms', async () => {
-  try {
-    const roomSnapshot = await chatCollection.get();
+export const GetAllRooms = createAsyncThunk(
+  'rooms/getAllRooms',
+  async (values, {dispatch}) => {
+    try {
+      const roomSnapshot = await chatCollection.get();
 
-    const roomsData = roomSnapshot.docs.map(doc => doc.data());
+      const roomsData = roomSnapshot?.docs?.map(doc => doc.data());
 
-    return roomsData;
-  } catch (error) {
-    throw error;
-  }
-});
+      chatCollection.onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+          if (change.type === 'modified') {
+            const modifiedRoom = change.doc.data();
+            dispatch(updateRoom(modifiedRoom));
+          }
+        });
+      });
+
+      return roomsData;
+    } catch (error) {
+      throw error;
+    }
+  },
+);
 
 export const GetMediaByRoom = createAsyncThunk(
   'GetMediaByRoom',
@@ -90,10 +108,18 @@ export const SendMessageByRoom = createAsyncThunk(
         .doc()
         .set({
           message: values.message,
+          imgMessage: values?.imgMessage ? values?.imgMessage : '',
           createdAt: new Date(),
           senderId: values?.senderId,
           fullName: values?.fullName,
           mediaType: values?.mediaType ? values?.mediaType : 'text',
+        })
+        .then(() => {
+          chatCollection.doc(values?.groupId).update({
+            message: values.message,
+            createdAt: new Date(),
+            fullName: values?.fullName,
+          });
         });
     } catch (error) {
       console.error('error', error);
@@ -122,15 +148,10 @@ export const getGroup = createAsyncThunk(
 );
 
 export const updateGroup = createAsyncThunk(
-  'updateUser',
+  'updateGroup',
   async (values, {dispatch}) => {
-    console.log('update values ^^^^^^^^^^^^^^^^^^', values);
     try {
-      await chatCollection
-        .doc(values.groupId)
-        .collection('members')
-        .doc(values.userId)
-        .update(values.updatedUserData);
+      await chatCollection.doc(values.groupId).update(values.updatedUserData);
     } catch (error) {
       console.error('error', error);
       throw error;
@@ -138,10 +159,148 @@ export const updateGroup = createAsyncThunk(
   },
 );
 
+export const getMedia = createAsyncThunk(
+  'getMedia',
+  async (values, {dispatch}) => {
+    try {
+      const snapshot = await chatCollection
+        .doc(values)
+        .collection('messages')
+        .where('mediaType', '==', 'image')
+        .get();
+
+      const mediaData = snapshot?.docs?.map(doc => doc.data());
+
+      return mediaData;
+    } catch (error) {
+      console.error('error', error);
+      throw error;
+    }
+  },
+);
+
+export const getAllMembers = createAsyncThunk(
+  'getAllMembers',
+  async (values, {dispatch}) => {
+    try {
+      const snapshot = await chatCollection
+        .doc(values)
+        .collection('members')
+        .get();
+
+      const membersData = snapshot.docs.map(doc => doc.data());
+
+      return membersData;
+    } catch (error) {
+      console.error('error', error);
+      throw error;
+    }
+  },
+);
+
+export const getLastMessage = createAsyncThunk(
+  'getLastMessage',
+  async (values, {dispatch}) => {
+    try {
+      const snapshot = await chatCollection
+        .doc(values)
+        .collection('messages')
+        .doc()
+        .get();
+
+      const membersData = snapshot?.docs?.map(doc => doc.data());
+
+      return membersData;
+    } catch (error) {
+      console.error('error', error);
+      throw error;
+    }
+  },
+);
+
+export const UploadBills = createAsyncThunk(
+  'UploadBills',
+  async (values, {dispatch}) => {
+    try {
+      const groupCollection = invoiceCollection.doc();
+      const invoiceId = groupCollection.id;
+
+      await groupCollection.set({
+        groupId: values?.groupId,
+        groupName: values?.groupName,
+        invoiceId: invoiceId,
+        invoice: values?.invoiceUrl,
+        createdAt: new Date(),
+      });
+    } catch (error) {
+      console.error('error', error);
+    }
+  },
+);
+
+export const UploadSalarySlips = createAsyncThunk(
+  'UploadBills',
+  async (values, {dispatch}) => {
+    try {
+      const groupCollection = salaryCollection.doc();
+      const invoiceId = groupCollection.id;
+
+      await groupCollection.set({
+        groupId: values?.groupId,
+        groupName: values?.groupName,
+        invoiceId: invoiceId,
+        slip: values?.salaryUrl,
+        createdAt: new Date(),
+      });
+    } catch (error) {
+      console.error('error', error);
+    }
+  },
+);
+
+export const GetAllBills = createAsyncThunk(
+  'GetAllBills',
+  async (values, {dispatch}) => {
+    console.log('messages values', values);
+    try {
+      const groupCollection = invoiceCollection.get();
+
+      const invoicesArray = [];
+
+      (await groupCollection).forEach(doc => {
+        invoicesArray.push(doc.data());
+      });
+
+      return invoicesArray;
+    } catch (error) {
+      console.error('error', error);
+    }
+  },
+);
+
+export const AddMembers = createAsyncThunk(
+  'AddMembers',
+  async (values, {dispatch}) => {
+    console.log('values', values);
+    try {
+      chatCollection.doc(values.id).collection('members').add({});
+    } catch (error) {
+      console.log('Error in adding members', error);
+    }
+  },
+);
+
 export const ChatSlice = createSlice({
   name: 'ChatSlice',
   initialState,
-  reducers: {},
+  reducers: {
+    setLastMessage: (state, action) => {},
+    updateRoom(state, action) {
+      state.allRooms = state.allRooms.map(room =>
+        room.groupId === action.payload.groupId ? action.payload : room,
+      );
+    },
+  },
   extraReducers: builder => {
     builder.addCase(GetAllRooms.fulfilled, (state, action) => {
       state.allRooms = action.payload;
@@ -149,11 +308,24 @@ export const ChatSlice = createSlice({
     builder.addCase(getGroup.fulfilled, (state, action) => {
       state.groupData = action.payload;
     });
+    builder.addCase(getMedia.fulfilled, (state, action) => {
+      state.allMedia = action.payload;
+    });
+    builder.addCase(getAllMembers.fulfilled, (state, action) => {
+      state.allMembers = action.payload;
+    });
     builder.addCase(GetMediaByRoom.fulfilled, (state, action) => {
       const mediaData = action.payload;
       state.groupMedia = mediaData;
     });
+    builder.addCase(GetAllBills.fulfilled, (state, action) => {
+      state.invoiceArray = action.payload;
+    });
+    builder.addCase(updateGroup.fulfilled, (state, action) => {
+      state.groupData = action.payload;
+    });
   },
 });
 
+export const {updateRoom} = ChatSlice.actions;
 export default ChatSlice.reducer;

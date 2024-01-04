@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {BillStyle} from '../Utils/Styles/BillStyles';
 import {
   View,
@@ -13,6 +13,11 @@ import {
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import {useFormik} from 'formik';
 import RNFetchBlob from 'rn-fetch-blob';
+import {firebase} from '@react-native-firebase/storage';
+import RNFS from 'react-native-fs';
+import {UploadSalarySlips} from '../Utils/Slices/ChatSlice';
+import Index from '../Navigation';
+// import logo from '../Assets/Images/decorus_logo'
 
 const initialValues = {
   Client: '',
@@ -128,184 +133,264 @@ const SalaryComponent = () => {
     },
   ];
 
-  const orderLines = [
+  const clientArray = [
     {
-      id: 1,
-      product: 'Product 1',
-      quantity: 1,
-      price: '$10.00',
-    },
-    {
-      id: 2,
-      product: 'Product 2',
-      quantity: 2,
-      price: '$20.00',
-    },
-    {
-      id: 3,
-      product: 'Product 3',
-      quantity: 3,
-      price: '$30.00',
+      name: 'Louis vuiton',
+      quantity: '4',
+      days: '3',
+      amount: '3242342',
     },
   ];
-
-  const movePdfToDocumentsFolder = async (sourcePath, destinationPath) => {
-    console.log('Various Paths are as follows', sourcePath, destinationPath);
-    try {
-      const result = RNFetchBlob.fs.mv(sourcePath, destinationPath);
-      console.log('result path', result);
-      if (result) {
-        return destinationPath;
-      } else {
-        throw new Error('Failed to move PDF to documents folder');
-      }
-    } catch (error) {
-      throw new Error(error);
-    }
-  };
 
   const generatePDF = async values => {
     try {
       const html = `<html>
       <head>
-      <style>
-      table{
-      width: 100%;
-      border-collapse:collapse;
-      border: 1px solid black;
-      }
-      table td{line-height:25px;padding-left:15px;}
-      table th{background-color:#fbc403; color:#363636;}
-      </style>
-      
+         <style>
+            table{
+            width: 100%;
+            border-collapse:collapse;
+            border: 1px solid black;
+            margin-top: 20px;
+            }
+            table td{line-height:25px;padding-left:15px;}
+            table th{background-color:#7d2caa; color:#ffff;}
+            .head {
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              justify-content: space-around;
+              margin-bottom: 20px;
+            }
+            .first-table{
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              justify-content: space-between;
+              gap: 20px;
+            }
+            .company{
+              font-size: 30px;
+              color: #7d2caa;
+            }
+            .footer-one {
+              background-color: #7d2caa;
+              color: white;
+              text-align: center;
+              padding: 1px;
+            }
+            .footer-two{
+              height: 20px;
+               background-color: #7d2caa;
+            }
+         </style>
       </head>
       <body>
-      <table border="1">
-      <tr height="100px" style="background-color:#363636;color:#ffffff;text-align:center;font-size:24px; font-weight:600;">
-      <td colspan='4'>Decorus Events</td>
-      </tr>
-      <tr>
-      <th>Personel NO:</th>
-      <td>${values?.PhoneNo}</td>
-      <th>Name</th>
-      <td>${values?.FullName}</td>
-      </tr>
-      <!-----2 row--->
-      <tr>
-      <th>Bank</th>
-      <td>x0x0x0</td>
-      <th>Bank A/c No.</th>
-      <td>${values?.AccountNo}</td>
-      </tr>
-      <!------3 row---->
-      <tr>
-      <th>DOB</th>
-      <td>${values?.DOB}</td>
-      <th>Lop Days</th>
-      <td>${values['LOP Days']}</td>
-      </tr>
-      <!------4 row---->
-      <tr>
-      <th>PF No.</th>
-      <td>${values['PF Number']}</td>
-      <th>STD days</th>
-      <td>${values['STD Days']}</td>
-      </tr>
-      <!------5 row---->
-      <tr>
-      <th>Location</th>
-      <td>${values?.Location}</td>
-      <th>Working Days</th>
-      <td>${values['Working Days']}</td>
-      </tr>
-      <!------6 row---->
-      <tr>
-      <th>Department</th>
-      <td>${values?.Department}</td>
-      <th>Designation</th>
-      <td>${values?.Designation}</td>
-      </tr>
-      </table>
-      <tr></tr>
-      <br/>
-      <table border="1">
-      <tr>
-      <th >Earnings</th>
-      <th>Amount</th>
-      <th >Deductions</th>
-      <th>Amount</th>
-      </tr>
-      <tr>
-      <td>Basic</td>
-      <td>${values?.Basic}</td>
-      <td>provident fund</td>
-      <td>${values?.PF}</td>
-      </tr>
-      <tr>
-      <td>House Rent Allowance</td>
-      <td>${values['HR Allowance']}</td>
-      <td>professional tax</td>
-      <td>600</td>
-      </tr>
-      <tr>
-      <td>special Allowance</td>
-      <td>400</td>
-      <td>Income tax</td>
-      <td>${values['Income Tax']}</td>
-      </tr>
-      <tr>
-      <td>conveyance</td>
-      <td>${values?.Conveneince}</td>
-      </tr>
-      <tr>
-      <td>ADD Special allowance</td>
-      <td>2000</td>
-      </tr>
-      <tr>
-      <td>shift Allowance</td>
-      <td>${values['Shift Allowance']}</td>
-      </tr>
-      <tr>
-      <td>bonus</td>
-      <td>${values?.Bonus}</td>
-      </tr>
-      <tr>
-      <td>medical Allowance</td>
-      <td>${values['Medical Allowance']}</td>
-      </tr>
-      <tr>
-      <th>Gross Earnings</th>
-      <td>Rs. ${values['Gross Earnings']}</td>
-      <th >Gross Deductions</th>
-      <td>Rs. ${values['Gross Deduction']}</td>
-      </tr>
-      <tr>
-      <td></td>
-      <td><strong>NET PAY</strong></td>
-      <td>Rs.${values['Net Pay']}</td>
-      <td></td>
-      </tr>
-      </table>
+        <div class="head">
+          <h3 class="company">Decorus Services Pvt. Ltd.</h3>
+          <img src="https://firebasestorage.googleapis.com/v0/b/dercorus.appspot.com/o/decorus_logo.png?alt=media&token=b04f4178-f4f0-47be-929a-ff433cbc1727" height="100px" ></img>
+        </div>
+        <div class="first-table">
+         <table border="1">
+            <tr>
+               <th>Client</th>
+               <td>Aditya kumar</td>
+            </tr>
+            <!-----2 row--->
+            <tr>
+               <th>Client Address</th>
+               <td>Prahlad nagar , Ahmedabad</td>
+            </tr>
+            <!------3 row---->
+            <tr>
+               <th>Client GSTIN</th>
+               <td>2BJY23456q2</td>
+            </tr>
+            <!------4 row---->
+            <tr>
+               <th>Brand</th>
+               <td>Unsolved Solutions</td>
+            </tr>
+            <!------5 row---->
+            <tr>
+               <th>Location</th>
+               <td>Ahmedabad</td>
+            </tr>
+            <!------6 row---->
+            <tr>
+               <th>Detail</th>
+               <td>Invoice</td>
+            </tr>
+         </table>
+          <table border="1">
+            <tr>
+               <th>Estimate No.</th>
+               <td>10</td>
+            </tr>
+            <!-----2 row--->
+            <tr>
+               <th>Estimate Date</th>
+               <td>18/12/2023</td>
+            </tr>
+            <!------3 row---->
+            <tr>
+               <th>Event Date</th>
+               <td>01/01/2024</td>
+            </tr>
+            <!------4 row---->
+            <tr>
+               <th>Estimate No.</th>
+               <td>10</td>
+            </tr>
+            <!------5 row---->
+            <tr>
+               <th>PO Number</th>
+               <td>456461</td>
+            </tr>
+            <!------6 row---->
+            <tr>
+               <th>HSN/SAC</th>
+               <td>998596</td>
+            </tr>
+         </table>
+         </div>
+         <table border="1">
+            <tr>
+               <th>Registered Name</th>
+               <td>Decorus Services Pvt. Ltd.</td>
+            </tr>
+            <!-----2 row--->
+            <tr>
+               <th>GSTIN</th>
+               <td>5461321</td>
+            </tr>
+            <!------3 row---->
+            <tr>
+               <th>PAN NO</th>
+               <td>AAKCD867868</td>
+            </tr>
+            <!------4 row---->
+            <tr>
+               <th>TAN NO</th>
+               <td>65432132</td>
+            </tr>
+         </table>
+         <tr></tr>
+         <br/>
+         <table border="1">
+            <tr>
+              <th>Sr. No.</th>
+               <th >Elements</th>
+               <th>QTY</th>
+               <th >Rate</th>
+               <th >Days</th>
+               <th>Amount</th>
+            </tr>
+            ${clientArray.map((client, index) => (
+              <tr>
+                <td>{index + 1}</td>
+                <td>{client.name}</td>
+                <td>{client.quantity}</td>
+                <td></td>
+                <td>{client.days}</td>
+                <td>{client.amount}</td>
+              </tr>
+            ))}
+             
+            <tr>
+              <td></td>
+               <td>As per annexure</td>
+               <td></td>
+               <td></td>
+               <td></td>
+            </tr>
+            <tr>
+              <td></td>
+               <td></td>
+               <td></td>
+               <td></td>
+               <td></td>
+               <td></td>
+   
+            </tr>
+            <tr>
+               <th></th>
+               <th>Subtotal</th>
+               <th></th>
+               <th></th>
+               <th></th>
+               <th>678768</th>
+            </tr>
+            <tr>
+                <td></td>
+                <td><strong>Add:Agency Fees-15%</strong></td>
+                <td></td>
+               <td></td>
+               <td></td>
+            </tr>
+            <tr>
+               <th></th>
+               <th>Total Amount</th>
+               <th></th>
+               <th></th>
+               <th></th>
+               <th>678768</th>
+            </tr>
+            <tr>
+               <td></td>
+               <td><strong>Add:SGST 9%</strong></td>
+               <td></td>
+              <td></td>
+              <td></td>
+              <td>1200</td>
+           </tr>
+           <tr>
+               <td></td>
+               <td><strong>Add:CGST 9%</strong></td>
+               <td></td>
+              <td></td>
+              <td></td>
+              <td>1200</td>
+           </tr>
+           <tr>
+               <th></th>
+               <th></th>
+               <th></th>
+               <th></th>
+               <th>Grand Total</th>
+               <th>678768</th>
+            </tr>
+         </table>
+         <div>
+           <p>Account Holder: DECORUS SERVICES PRIVATE LIMITED</p>
+           <p>ACCOUNT NUMBER: 502000082384709</p>
+           <p>IFSC: HDFC0000485</p>
+           <p>BRANCH: UDHYOG NAGAR</p>
+           <p>ACCOUNT TYPE: CURRENT</p>
+           <p>VPA: 9899696992@hdfcbank</p>
+         </div>
+         <div class="footer-one">
+           <p>Decorus Services Pvt. Ltd.</p>
+         </div>
+         <p style="text-align:center">Yinchuan iBi Yucheng Center, No. 490 Ning’an Street, Jinfeng District, Yinchuan City, Ningxia</p>
+          <div class="footer-two">
+         </div>
       </body>
-      </html>`;
+   </html>`;
       const options = {
         html,
         fileName: `${values?.FullName}`,
-        directory: 'Invoices',
+        directory: 'Downloads',
       };
       const file = await RNHTMLtoPDF.convert(options);
 
-      const documentsFolderPath = RNFetchBlob.fs.dirs.DocumentDir;
-      const destinationPath = `${documentsFolderPath}/${values?.FullName}.pdf`;
+      const downloadDirectory = RNFS.DownloadDirectoryPath;
+      const destinationPath = `${downloadDirectory}/${values.FullName}_salary_slip.pdf`;
 
-      const movedFilePath = await movePdfToDocumentsFolder(
-        file.filePath,
-        destinationPath,
-      );
+      await RNFS.moveFile(file.filePath, destinationPath);
+      setPdfFile(file.filePath);
 
-      setPdfFile(movedFilePath);
-
-      Alert.alert('Success', `PDF saved to ${movedFilePath}`);
+      Alert.alert('Success', `PDF saved to ${destinationPath}`);
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -318,6 +403,39 @@ const SalaryComponent = () => {
       generatePDF(values);
     },
   });
+
+  useEffect(() => {
+    if (pdfFile) {
+      const uploadToStorage = async () => {
+        try {
+          const reference = storage().ref(
+            `/SalarySlip/${formik.values.FullName}_SalarySlip.pdf`,
+          );
+          await reference.putFile(pdfUrl);
+
+          const downloadURL = await reference.getDownloadURL();
+          console.log('Download URL', downloadURL);
+
+          dispatch(
+            UploadSalarySlips({
+              ...formik.values,
+              groupId: item?.groupId,
+              groupName: item?.groupName,
+              invoiceUrl: downloadURL,
+            }),
+          );
+          setLoading(false);
+          Alert.alert('Success', 'PDF uploaded successfully');
+        } catch (error) {
+          console.error('Upload Error', error);
+          Alert.alert('Error', 'Failed to upload PDF');
+          setLoading(false);
+        }
+      };
+
+      uploadToStorage();
+    }
+  }, [pdfFile]);
 
   return (
     <SafeAreaView>

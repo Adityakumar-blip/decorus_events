@@ -12,6 +12,8 @@ import {
   ScrollView,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+// import RNUpiPayment from 'react-native-upi-payment';
+// import OneUpi from 'one-react-native-upi';
 
 const DEFAULT_HEIGHT = 200;
 
@@ -54,6 +56,43 @@ export function BottomSheet({
   const {height: screenHeight} = useWindowDimensions();
   const bottom = useAnimatedBottom(show, height);
 
+  const handlePayment = () => {
+    // RNUpiPayment.initializePayment(
+    //   {
+    //     vpa: '8957920720@upi', // or can be john@ybl or mobileNo@upi
+    //     payeeName: 'John Doe',
+    //     amount: '1',
+    //     transactionRef: 'aasf-332-aoei-fn',
+    //   },
+    //   successCallback,
+    //   failureCallback,
+    // );
+    const config = {
+      upiId: '8282009420@paytm',
+      name: 'Sonu',
+      note: 'Test payment',
+      amount: '1',
+      targetPackage: 'in.org.npci.upiapp',
+    };
+
+    const onSuccess = success => {
+      console.log({success});
+    };
+    const onFailure = error => {
+      console.log({error});
+    };
+
+    OneUpi.initiate(config, onSuccess, onFailure);
+  };
+
+  function successCallback(data) {
+    // do whatever with the data
+  }
+
+  function failureCallback(data) {
+    // do whatever with the data
+  }
+
   return (
     <>
       {show && (
@@ -90,7 +129,7 @@ export function BottomSheet({
             justifyContent: 'center',
             marginTop: 15,
           }}
-          onPress={() => navigation.navigate('Checkout')}>
+          onPress={() => handlePayment()}>
           <Text style={{color: 'white', fontSize: 13, fontWeight: '600'}}>
             Continue to Pay
           </Text>

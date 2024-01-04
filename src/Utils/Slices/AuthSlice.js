@@ -67,6 +67,35 @@ export const UpdateUser = createAsyncThunk('UpdateUser', async values => {
     console.error('error in creating user', error);
   }
 });
+
+export const loginUserWithEmail = createAsyncThunk(
+  'getUser',
+  async (values, {rejectWithValue}) => {
+    try {
+      const usersDoc = await usersCollection
+        .where('email', '==', values.email)
+        .get();
+
+      if (!usersDoc.empty) {
+        const user = usersDoc.docs[0].data();
+
+        if (user.password === values.password) {
+          return user;
+        } else {
+          console.log('Password not matched');
+          return rejectWithValue('Incorrect password');
+        }
+      } else {
+        console.log('No user found');
+        return rejectWithValue('User not found');
+      }
+    } catch (error) {
+      console.error('Error fetching user', error);
+      return rejectWithValue('Failed to fetch user');
+    }
+  },
+);
+
 export const AuthSlice = createSlice({
   name: 'AuthSlice',
   initialState,

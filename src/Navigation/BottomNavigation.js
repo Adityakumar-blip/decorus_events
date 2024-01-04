@@ -22,6 +22,8 @@ import BankDetails from '../Screens/Private/Profile/BankDetails';
 import FileDecoder from '../Components/QrCoderReader';
 import CreateSlips from '../Screens/Private/Salary Slips/SalarySlip';
 import Checkout from '../Components/Checkout';
+import QRreader from '../Components/QRreader';
+import UserDetails from '../Components/UserDetails';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -39,39 +41,41 @@ export default function BottomNavigation() {
       <Stack.Screen name="Bank" component={BankDetails} />
       <Stack.Screen name="Decode" component={FileDecoder} />
       <Stack.Screen name="Checkout" component={Checkout} />
+      <Stack.Screen name="QRCode" component={QRreader} />
+      <Stack.Screen name="UserDetail" component={UserDetails} />
     </Stack.Navigator>
   );
 }
 const TabStack = ({navigation, route}) => {
   const {user} = useSelector(({AuthSlice}) => AuthSlice);
 
-  useEffect(() => {
-    const requestMediaPermission = async () => {
-      try {
-        if (Platform.OS === 'android') {
-          const granted = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-            {
-              title: 'Decorus Needs Media Permission',
-              message: 'Decorus needs access to your camera ',
-              buttonNegative: 'Cancel',
-              buttonPositive: 'OK',
-            },
-          );
-          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-            console.log('You can use the media');
-          } else {
-            console.log('Media permission denied');
-          }
-        } else if (Platform.OS === 'ios') {
-        }
-      } catch (err) {
-        console.warn(err);
-      }
-    };
+  // useEffect(() => {
+  //   const requestMediaPermission = async () => {
+  //     try {
+  //       if (Platform.OS === 'android') {
+  //         const granted = await PermissionsAndroid.request(
+  //           PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+  //           {
+  //             title: 'Decorus Needs Media Permission',
+  //             message: 'Decorus needs access to your camera ',
+  //             buttonNegative: 'Cancel',
+  //             buttonPositive: 'OK',
+  //           },
+  //         );
+  //         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+  //           console.log('You can use the media');
+  //         } else {
+  //           console.log('Media permission denied');
+  //         }
+  //       } else if (Platform.OS === 'ios') {
+  //       }
+  //     } catch (err) {
+  //       console.warn(err);
+  //     }
+  //   };
 
-    requestMediaPermission();
-  }, []);
+  //   requestMediaPermission();
+  // }, []);
 
   return (
     <Tab.Navigator

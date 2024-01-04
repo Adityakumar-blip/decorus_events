@@ -34,7 +34,7 @@ export const BillStyle = StyleSheet.create({
     backgroundColor: '#4287f5',
     padding: 15,
     borderRadius: 10,
-    width: '100%',
+    // width: '100%',
     alignItems: 'center',
     marginTop: 10,
   },

@@ -40,10 +40,25 @@ export default function TabHeader({
           <Text style={{color: 'white'}}>{para}</Text>
         </View>
       </View>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Description', {item: item})}>
-        <Image source={require('../Assets/Images/three_dots.png')} />
-      </TouchableOpacity>
+      <View
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}>
+        <TouchableOpacity
+          style={{marginRight: 15}}
+          onPress={() => {
+            navigation.navigate('Invoice', {item: item});
+          }}>
+          <Image source={require('../Assets/Images/bill.png')} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Description', {item: item})}
+          hitSlop={{left: 20, right: 20}}>
+          <Image source={require('../Assets/Images/three_dots.png')} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

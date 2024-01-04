@@ -22,6 +22,7 @@ export const HistoryStyles = StyleSheet.create({
     fontSize: 20,
     color: 'black',
     fontWeight: '600',
+    width: 150,
   },
   BillTime: {
     color: '#707070',

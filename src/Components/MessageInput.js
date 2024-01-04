@@ -7,12 +7,16 @@ import {
   TouchableOpacity,
   PermissionsAndroid,
   Platform,
+  NativeModules,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {fontPixel, heightPixel, widthPixel} from '../Utils/constants';
 import useImagePicker from '../Components/useImagePicker';
 import {useNavigation} from '@react-navigation/native';
 import {launchImageLibrary} from 'react-native-image-picker';
+import {QRreader} from 'react-native-qr-decode-image-camera';
+import RNFS from 'react-native-fs';
+import {BottomSheet} from 'react-native-btr';
 
 export default function MessageInput({
   value,
@@ -23,10 +27,11 @@ export default function MessageInput({
   imageUrl,
 }) {
   const [fileUri, setFilePath] = useState('');
+  const [bottomSheetVisible, setBottomSheetVisible] = useState(false);
 
   console.log('MESSAGE INPUT HEADER', headerName);
 
-  const {choose, clearFile, filePath} = useImagePicker();
+  const {choose, clearFile, filePath, capture} = useImagePicker();
 
   console.log('image file path', filePath);
 
@@ -59,7 +64,6 @@ export default function MessageInput({
   };
 
   const launchNativeImageLibrary = () => {
-    console.log('heree');
     try {
       let options = {
         includeBase64: true,
@@ -76,6 +80,9 @@ export default function MessageInput({
         } else {
           const source = {uri: response.assets.uri};
           setFilePath(response.assets[0].uri);
+
+          const fileUri = response.assets[0].uri;
+
           navigation.navigate('Preview', {
             fileUri: response.assets[0].uri,
             path: roomPath,
@@ -94,6 +101,30 @@ export default function MessageInput({
     }
   };
 
+  const handleOpenCamera = async () => {
+    try {
+      console.log('hereee');
+      capture('photo');
+    } catch (error) {
+      console.log('Camera error', error);
+    }
+  };
+
+  console.log('filepath', filePath);
+
+  useEffect(() => {
+    if (filePath) {
+      navigation.navigate('Preview', {
+        fileUri: filePath.assets[0].uri,
+        path: roomPath,
+        headerName,
+        members,
+        imageUrl,
+        type: 'send',
+      });
+    }
+  }, [filePath]);
+
   return (
     <View style={styles.Container}>
       <TextInput
@@ -103,9 +134,27 @@ export default function MessageInput({
         placeholderTextColor={'grey'}
         onChange={text => onChange && onChange(text?.nativeEvent?.text)}
       />
-      <TouchableOpacity onPress={() => launchNativeImageLibrary()}>
-        <Image source={require('../Assets/Images/Camera_1.png')} />
+      <TouchableOpacity onPress={() => setBottomSheetVisible(true)}>
+        <Image
+          height={10}
+          width={10}
+          source={require('../Assets/Images/attach-file.png')}
+        />
       </TouchableOpacity>
+
+      <BottomSheet
+        visible={bottomSheetVisible}
+        onBackButtonPress={() => setBottomSheetVisible(false)}
+        onBackdropPress={() => setBottomSheetVisible(false)}>
+        <View style={styles.bottomSheet}>
+          <TouchableOpacity onPress={() => launchNativeImageLibrary()}>
+            <Image source={require('../Assets/Images/image.png')} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleOpenCamera()}>
+            <Image source={require('../Assets/Images/camera_2.png')} />
+          </TouchableOpacity>
+        </View>
+      </BottomSheet>
     </View>
   );
 }
@@ -120,9 +169,30 @@ const styles = StyleSheet.create({
   },
   TextInputContainer: {
     width: widthPixel(150),
-    height: heightPixel(80),
+    height: heightPixel(90),
     fontSize: fontPixel(30),
     letterSpacing: 0.5,
+    color: 'black',
+  },
+  bottomSheet: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 45,
+    height: 150,
+  },
+  bottomSheetOption: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ECECEC',
+  },
+  bottomSheetOptionText: {
+    fontSize: 18,
     color: 'black',
   },
 });

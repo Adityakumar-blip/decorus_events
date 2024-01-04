@@ -13,9 +13,12 @@ import {useDispatch, useSelector} from 'react-redux';
 import {GetAllUser} from '../../../Utils/Slices/UserSlice';
 import {useNavigation} from '@react-navigation/native';
 
-const Contact = () => {
+const Contact = ({route}) => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
+  const groupId = route?.params?.groupId;
+
+  console.log('group id', groupId);
 
   const {allUsers} = useSelector(({UserSlice}) => UserSlice);
   const {user} = useSelector(({AuthSlice}) => AuthSlice);
@@ -133,6 +136,8 @@ const Contact = () => {
     }
   };
 
+  console.log('selected users', selectedUsers);
+
   return (
     <View style={{flex: 1, backgroundColor: 'white'}}>
       <View style={TeamStyle.TeamHeader}>
@@ -185,51 +190,74 @@ const Contact = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={{maxHeight: 70}}>
-        <View style={{padding: 20, flexDirection: 'row', flexWrap: 'wrap'}}>
-          {selectedUsers.map((item, index) => (
-            <View
-              key={item.userId}
-              style={{
-                width: 'auto',
-                backgroundColor: '#4369F6',
-                padding: 10,
-                borderRadius: 20,
-                margin: 5,
-              }}>
-              <Text style={{color: 'white', fontWeight: '600'}}>
-                {item.fullName}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
+      {selectedUsers.length > 0 && (
+        <ScrollView
+          style={{maxHeight: 70, borderWidth: 1, borderColor: 'grey'}}>
+          <View style={{padding: 20, flexDirection: 'row', flexWrap: 'wrap'}}>
+            {selectedUsers?.map((item, index) => (
+              <View
+                key={index}
+                style={{
+                  width: 'auto',
+                  backgroundColor: '#4369F6',
+                  padding: 10,
+                  borderRadius: 20,
+                  margin: 5,
+                }}>
+                <Text style={{color: 'white', fontWeight: '600'}}>
+                  {item.fullName}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      )}
 
       <View style={{padding: 20}}>
         <FlatList
           data={showSearchInput && searchText ? filteredContacts : allUsers}
           renderItem={renderContactItem}
-          keyExtractor={item => item.userId}
+          keyExtractor={item => item.phoneNo}
         />
       </View>
       <TouchableOpacity
-        style={{
-          position: 'absolute',
-          bottom: 20, // Adjust this value to control the distance from the bottom
-          right: 20, // Adjust this value to control the distance from the right
-          width: 60,
-          height: 60,
-          borderRadius: 30,
-          backgroundColor: '#4369F6',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
+        style={
+          groupId
+            ? {
+                position: 'absolute',
+                bottom: 20,
+                right: 20,
+                width: 200,
+                height: 60,
+                borderRadius: 30,
+                backgroundColor: '#4369F6',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }
+            : {
+                position: 'absolute',
+                bottom: 20,
+                right: 20,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                backgroundColor: '#4369F6',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }
+        }
         onPress={() => {
           handleGroup();
         }}>
-        <Text style={{color: 'white', fontWeight: '600', fontSize: 18}}>
-          Go
-        </Text>
+        {groupId ? (
+          <Text style={{color: 'white', fontWeight: '600', fontSize: 18}}>
+            Add Members
+          </Text>
+        ) : (
+          <Text style={{color: 'white', fontWeight: '600', fontSize: 18}}>
+            Go
+          </Text>
+        )}
       </TouchableOpacity>
     </View>
   );

@@ -2,9 +2,12 @@ import {Image, ImageBackground, StyleSheet, Text, View} from 'react-native';
 import React, {useEffect} from 'react';
 import SplashHide from 'react-native-splash-screen'; //import SplashScreen
 import {useNavigation} from '@react-navigation/native';
+import {useSelector} from 'react-redux';
 
 const SplashScreen = () => {
   const navigation = useNavigation();
+  const {user} = useSelector(({AuthSlice}) => AuthSlice);
+
   const navigateScreen = () => {
     setTimeout(() => {
       navigation.navigate('LoginScreen');
@@ -12,8 +15,10 @@ const SplashScreen = () => {
   };
 
   useEffect(() => {
-    navigateScreen();
-  }, []);
+    if (!user) {
+      navigateScreen();
+    }
+  }, [user]);
 
   //setNavigationProps
 

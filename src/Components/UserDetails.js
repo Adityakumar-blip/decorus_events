@@ -1,34 +1,27 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-  View,
-  Text,
   Image,
-  TouchableOpacity,
+  Text,
+  View,
   ScrollView,
-  TextInput,
-  FlatList,
+  StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
-import {ProfileStyle} from '../../../Utils/Styles/ProfileStyles';
+import {ProfileStyle} from '../Utils/Styles/ProfileStyles';
 import {useDispatch, useSelector} from 'react-redux';
-import {Logout, UpdateUser} from '../../../Utils/Slices/AuthSlice';
 import {useNavigation} from '@react-navigation/native';
-import ImageC from '../../../Components/ImageC';
-import {firebase} from '@react-native-firebase/storage';
-import {GetAllUser} from '../../../Utils/Slices/UserSlice';
-import {updateGroup} from '../../../Utils/Slices/ChatSlice';
+import {getUserById} from '../Utils/Slices/UserSlice';
 
-const Profile = () => {
-  const dispatch = useDispatch();
+const UserDetails = ({route}) => {
   const navigation = useNavigation();
-  const {session, user} = useSelector(({AuthSlice}) => AuthSlice);
-  const {allUsers} = useSelector(({UserSlice}) => UserSlice);
-
+  const dispatch = useDispatch();
   const [editEmail, setEditEmail] = useState(false);
   const [email, setEmail] = useState('');
   const [editPhone, setEditPhone] = useState(false);
   const [phone, setPhone] = useState('');
+  const [user, setUserData] = useState({});
 
-  console.log('USER DATA ********************', user);
+  console.log('User ID', route.params.userId);
 
   const handleEmailEdit = () => {
     setEditEmail(true);
@@ -59,79 +52,29 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    dispatch(GetAllUser());
+    dispatch(getUserById(route?.params?.userId)).then(res => {
+      console.log('User Response', res.payload);
+      setUserData(res?.payload);
+    });
   }, []);
-
-  const renderUsers = ({item, index}) => {
-    if (item?.role === 'user') {
-      return null;
-    }
-    return (
-      <View
-        style={{
-          width: 80,
-          marginTop: 20,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-        key={index}>
-        <View>
-          <Image
-            source={{
-              uri: item?.image ? item?.image : undefined,
-            }}
-            style={{height: 60, width: 60, borderRadius: 50}}
-          />
-        </View>
-        <View>
-          <Text style={{color: 'black'}}>{item?.fullName}</Text>
-        </View>
-      </View>
-    );
-  };
-
   return (
-    <ScrollView>
-      <View style={{padding: 20}}>
-        <View>
-          <Text style={{color: '#4369F6', fontSize: 32, fontWeight: '700'}}>
-            Profile
-          </Text>
-        </View>
-        <View style={ProfileStyle.ProfileDetails}>
-          <View style={ProfileStyle.ProfileImage}>
-            <ImageC
-              source={user?.image}
-              onChange={url => {
-                dispatch(updateGroup({image: url}));
-              }}
-              resizeMode="contain"
-            />
-          </View>
-          <View>
-            <Text style={ProfileStyle.Username}>{user?.fullName}</Text>
-            <Text style={{color: 'black'}}>Admin</Text>
-          </View>
-          {/* <TouchableOpacity>
-            <Image source={require('../../../Assets/Images/pencil.png')} />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Image source={require('../../../Assets/Images/camera.png')} />
-          </TouchableOpacity> */}
-        </View>
-        <View>
-          <Text style={{fontWeight: '600', color: 'black', fontSize: 16}}>
-            Admins
-          </Text>
-          <FlatList
-            data={allUsers}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            renderItem={renderUsers}
-            keyExtractor={(item, index) => index.toString()}
-          />
-        </View>
+    <View style={styles.container}>
+      <View style={{backgroundColor: 'black', padding: 15, paddingLeft: 20}}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image source={require('../Assets/Images/back_icon.png')} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.header}>
+        <Image
+          source={{
+            uri: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8aGVhZHNob3R8ZW58MHx8MHx8fDA%3D',
+          }}
+          style={styles.profileImage}
+        />
+        <Text style={styles.username}>{user?.fullName}</Text>
+        <Text style={styles.role}>{user?.role}</Text>
+      </View>
+      <ScrollView style={styles.details}>
         <View
           style={{
             display: 'flex',
@@ -147,7 +90,7 @@ const Profile = () => {
                 gap: 20,
                 alignItems: 'center',
               }}>
-              <Image source={require('../../../Assets/Images/email.png')} />
+              <Image source={require('../Assets/Images/email.png')} />
               {editEmail ? (
                 <TextInput
                   value={email}
@@ -181,7 +124,7 @@ const Profile = () => {
                 gap: 20,
                 alignItems: 'center',
               }}>
-              <Image source={require('../../../Assets/Images/phone.png')} />
+              <Image source={require('../Assets/Images/phone.png')} />
               {editPhone ? (
                 <TextInput
                   value={phone}
@@ -214,27 +157,59 @@ const Profile = () => {
             style={ProfileStyle.Email}
             onPress={() => handleBank()}>
             <View style={{display: 'flex', flexDirection: 'row', gap: 20}}>
-              <Image source={require('../../../Assets/Images/bank.png')} />
+              <Image source={require('../Assets/Images/bank.png')} />
               <Text style={{color: '#407BFF', fontSize: 15, fontWeight: '700'}}>
                 Add Bank Details
               </Text>
             </View>
-            <Image source={require('../../../Assets/Images/right-arrow.png')} />
+            <Image source={require('../Assets/Images/right-arrow.png')} />
           </TouchableOpacity>
           <TouchableOpacity
             style={ProfileStyle.Email}
             onPress={() => dispatch(Logout())}>
             <View style={{display: 'flex', flexDirection: 'row', gap: 20}}>
-              <Image source={require('../../../Assets/Images/logout.png')} />
+              <Image source={require('../Assets/Images/logout.png')} />
               <Text style={{color: '#407BFF', fontSize: 15, fontWeight: '700'}}>
                 Logout
               </Text>
             </View>
           </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
-export default Profile;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 20,
+  },
+  profileImage: {
+    width: '45%',
+    height: '45%',
+    borderRadius: 50,
+  },
+  username: {
+    color: 'black',
+    marginTop: 10,
+    fontSize: 20,
+  },
+  role: {
+    color: 'black',
+    marginTop: 5,
+    fontSize: 15,
+  },
+  details: {
+    flex: 1,
+    backgroundColor: 'white',
+    padding: 20,
+  },
+});
+
+export default UserDetails;

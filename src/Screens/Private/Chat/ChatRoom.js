@@ -15,6 +15,7 @@ import {
   Modal,
   StyleSheet,
   Animated,
+  Alert,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
@@ -25,8 +26,11 @@ import TabHeader from '../../../Components/TabHeader';
 import firestore from '@react-native-firebase/firestore';
 import ChatMessageWithCallout from '../../../Components/MessageCallout';
 import {SendMessageByRoom} from '../../../Utils/Slices/ChatSlice';
-import FileDecoder from '../../../Components/QrCoderReader';
+// import FileDecoder from '../../../Components/QrCoderReader';
 import {BottomSheet} from '../../../Components/UPIFound';
+// import RNQRGenerator from 'rn-qr-generator';
+import {CameraKitCamera} from 'react-native-camera-kit';
+import RNFS from 'react-native-fs';
 
 export default function ChatRoom(props) {
   const dispatch = useDispatch();
@@ -77,6 +81,8 @@ export default function ChatRoom(props) {
   const imageUrl = props?.route?.params?.imageUrl;
   // const group = props?.route?.params?.group;
 
+  console.log('Group Details', item);
+
   //onBackPress()
   const onBackPress = () => {
     navigation.goBack();
@@ -108,9 +114,14 @@ export default function ChatRoom(props) {
     fullName: user?.fullName || '',
     mediaType: 'text',
     roomPath: roomPath,
+    groupId: item?.groupId,
   };
   const handleTextMessage = () => {
-    dispatch(SendMessageByRoom(messageObj));
+    if (Message !== '') {
+      dispatch(SendMessageByRoom(messageObj));
+    } else {
+      Alert.alert('Message Error', 'Cannot send empty messages');
+    }
     setMessage('');
   };
 
@@ -122,7 +133,7 @@ export default function ChatRoom(props) {
         .orderBy('createdAt', 'asc');
 
       const snapshot = await messageRef.get();
-      const messages = snapshot.docs.map(res => {
+      const messages = snapshot?.docs?.map(res => {
         return res.data();
       });
 
@@ -130,7 +141,7 @@ export default function ChatRoom(props) {
       handleScrollToBottom();
 
       messageRef.onSnapshot(snap => {
-        const messages = snap.docs.map(res => {
+        const messages = snap?.docs?.map(res => {
           return res.data();
         });
         setMessages(messages);
@@ -156,7 +167,6 @@ export default function ChatRoom(props) {
     if (item.isDelete) {
       return null;
     }
-    console.log('message item ', item);
     return (
       <View>
         <View style={sender ? ChatStyle.leftChat : ChatStyle.rightChat}>
@@ -167,7 +177,14 @@ export default function ChatRoom(props) {
             <View>
               <View>
                 {!sender && (
-                  <Text style={ChatStyle.UserName}>{item?.fullName}</Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate('UserDetail', {
+                        userId: item?.senderId,
+                      })
+                    }>
+                    <Text style={ChatStyle.UserName}>{item?.fullName}</Text>
+                  </TouchableOpacity>
                 )}
                 {item?.mediaType === 'image' ? (
                   <TouchableOpacity onPress={() => ImagePreview(item?.text)}>
@@ -181,6 +198,9 @@ export default function ChatRoom(props) {
                         marginTop: 2,
                       }}
                     />
+                    {item?.imgMessage && (
+                      <Text style={{color: 'white'}}>{item?.imgMessage}</Text>
+                    )}
                   </TouchableOpacity>
                 ) : (
                   <Text
@@ -229,6 +249,7 @@ export default function ChatRoom(props) {
       } else {
         const source = {uri: response.assets.uri};
         setFileUri(response.assets[0].uri);
+
         props.navigation.navigate(ScreenName.ImagePreview, {
           fileUri: response.assets[0].uri,
           path: roomPath,
@@ -299,7 +320,7 @@ export default function ChatRoom(props) {
               </View>
             </View>
             <View style={ChatStyle.MediaView}>
-              <TouchableOpacity onPress={() => setShowBottomSheet(true)}>
+              <TouchableOpacity onPress={() => handleTextMessage()}>
                 <Image source={require('../../../Assets/Images/Send.png')} />
               </TouchableOpacity>
             </View>

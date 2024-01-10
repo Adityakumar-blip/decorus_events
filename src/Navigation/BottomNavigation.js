@@ -24,6 +24,7 @@ import CreateSlips from '../Screens/Private/Salary Slips/SalarySlip';
 import Checkout from '../Components/Checkout';
 import QRreader from '../Components/QRreader';
 import UserDetails from '../Components/UserDetails';
+import PaymentDetail from '../Components/PaymentDetail';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -43,6 +44,8 @@ export default function BottomNavigation() {
       <Stack.Screen name="Checkout" component={Checkout} />
       <Stack.Screen name="QRCode" component={QRreader} />
       <Stack.Screen name="UserDetail" component={UserDetails} />
+      <Stack.Screen name="ImagePreview" component={ImagePreview} />
+      <Stack.Screen name="PaymentDetail" component={PaymentDetail} />
     </Stack.Navigator>
   );
 }

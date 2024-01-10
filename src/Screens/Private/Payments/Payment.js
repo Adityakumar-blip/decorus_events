@@ -1,13 +1,42 @@
-import React from 'react';
-import {View, Text, Image, StyleSheet, Dimensions} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Dimensions,
+  FlatList,
+  TouchableOpacity,
+  ScrollView,
+  Animated,
+} from 'react-native';
 import {TeamStyle} from '../../../Utils/Styles/TeamsStyle';
 import {PaymentStyle} from '../../../Utils/Styles/PaymentStyles';
 import {BarChart, LineChart, PieChart} from 'react-native-gifted-charts';
 import SelectDropdown from 'react-native-select-dropdown';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import {useDispatch, useSelector} from 'react-redux';
+import {GetAllPayments} from '../../../Utils/Slices/ExpenseSlice';
+import Arrow from '../../../Assets/Svg/Arrow.svg';
 const {width} = Dimensions.get('window');
 
-const Payment = () => {
+const Payment = ({navigation}) => {
+  const dispatch = useDispatch();
+  const [scrollY] = useState(new Animated.Value(0));
+
+  const headerHeight = 200;
+
+  const translateY = scrollY.interpolate({
+    inputRange: [0, headerHeight],
+    outputRange: [0, -headerHeight],
+    extrapolate: 'clamp',
+  });
+
+  const handleScroll = Animated.event(
+    [{nativeEvent: {contentOffset: {y: scrollY}}}],
+    {useNativeDriver: false},
+  );
+  const {payments} = useSelector(({ExpenseSlice}) => ExpenseSlice);
   const data = [
     {
       value: 2500,
@@ -86,6 +115,65 @@ const Payment = () => {
   ];
 
   const countries = ['January', 'February', 'March', 'April'];
+
+  const renderRooms = ({item}) => {
+    // if (item.userId === user.userId) {
+    //   return null;
+    // }
+
+    const handleGroupClick = item => {
+      navigation.navigate('PaymentDetail', {
+        item,
+      });
+    };
+    return (
+      <View style={{marginHorizontal: 10}}>
+        <TouchableOpacity
+          onPress={() => handleGroupClick(item)}
+          style={TeamStyle.TeamChat}>
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 20,
+            }}>
+            <Image
+              source={{
+                uri: item?.image
+                  ? item?.image
+                  : 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=60&w=500&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDB8fGdyb3VwfGVufDB8fDB8fHww',
+              }}
+              height={60}
+              width={60}
+              style={{borderRadius: 10}}
+            />
+            <View style={{marginVertical: 20}}>
+              <Text style={{color: 'black', fontSize: 17, fontWeight: '500'}}>
+                {item?.groupName}
+              </Text>
+              <Text style={{maxWidth: 250, color: 'black'}}>
+                {item?.fullName && `${item?.fullName}: ${item?.message}`}
+              </Text>
+            </View>
+          </View>
+
+          <View style={{}}>
+            <Image
+              source={require('../../../Assets/Svg/Arrow.svg')}
+              height={20}
+              width={20}
+            />
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  useEffect(() => {
+    dispatch(GetAllPayments());
+  }, [dispatch]);
+
   return (
     <View>
       <View style={TeamStyle.TeamHeader}>
@@ -146,40 +234,52 @@ const Payment = () => {
           />
         </View>
       </View>
-      <View
+      <Animated.View
         style={{
-          padding: 15,
-          alignItems: 'center',
-          backgroundColor: '#bfcdff',
-          margin: 20,
-          borderRadius: 20,
+          transform: [{translateY}],
         }}>
-        <BarChart
-          data={data}
-          barWidth={20}
-          initialSpacing={1}
-          spacing={20}
-          barBorderRadius={10}
-          showGradient
-          yAxisThickness={0}
-          xAxisType={'dashed'}
-          xAxisColor={'white'}
-          yAxisTextStyle={{color: 'white'}}
-          stepValue={1000}
-          maxValue={6000}
-          noOfSections={6}
-          yAxisLabelTexts={['0', '1k', '2k', '3k', '4k', '5k', '6k']}
-          labelWidth={40}
-          isAnimated
-          xAxisLabelTextStyle={{color: 'lightgray', textAlign: 'center'}}
+        <View
+          style={{
+            padding: 15,
+            alignItems: 'center',
+            backgroundColor: '#bfcdff',
+            margin: 20,
+            borderRadius: 20,
+          }}>
+          <BarChart
+            data={data}
+            barWidth={20}
+            initialSpacing={1}
+            spacing={20}
+            barBorderRadius={10}
+            showGradient
+            yAxisThickness={0}
+            xAxisType={'dashed'}
+            xAxisColor={'white'}
+            yAxisTextStyle={{color: 'white'}}
+            stepValue={1000}
+            maxValue={6000}
+            noOfSections={6}
+            yAxisLabelTexts={['0', '1k', '2k', '3k', '4k', '5k', '6k']}
+            labelWidth={40}
+            isAnimated
+            xAxisLabelTextStyle={{color: 'white', textAlign: 'center'}}
+          />
+        </View>
+      </Animated.View>
+      <ScrollView onScroll={handleScroll} scrollEventThrottle={16}>
+        <View style={PaymentStyle.PaymentT}>
+          <Text style={{color: 'black', fontWeight: '600', fontSize: 19}}>
+            Team Transactions
+          </Text>
+          <Text style={{color: 'black'}}>See All</Text>
+        </View>
+        <FlatList
+          data={payments}
+          renderItem={renderRooms}
+          keyExtractor={item => item.groupId}
         />
-      </View>
-      <View style={PaymentStyle.PaymentT}>
-        <Text style={{color: 'black', fontWeight: '600', fontSize: 19}}>
-          Team Transactions
-        </Text>
-        <Text style={{color: 'black'}}>See All</Text>
-      </View>
+      </ScrollView>
     </View>
   );
 };

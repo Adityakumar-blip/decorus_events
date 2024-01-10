@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import AuthSlice from '../Slices/AuthSlice';
 import UserSlice from '../Slices/UserSlice';
 import ChatSlice from '../Slices/ChatSlice';
+import ExpenseSlice from '../Slices/ExpenseSlice';
 
 //Sattle persistConfig
 const persistConfig = {
@@ -18,6 +19,7 @@ const Reducer = combineReducers({
   AuthSlice: AuthSlice,
   UserSlice: UserSlice,
   ChatSlice: ChatSlice,
+  ExpenseSlice: ExpenseSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, Reducer);

@@ -34,7 +34,8 @@ const ImagePreview = ({route}) => {
   const {session, user} = useSelector(({AuthSlice}) => AuthSlice);
   const [paused, setPaused] = useState(true);
   const [showIcon, setShowIcon] = useState(false);
-  const [imageText, setImageText] = useState('');
+  const [amount, setAmount] = useState(0);
+  const [remarks, setRemarks] = useState('');
 
   console.log('ROUTE PARAMS IN HEADER', route?.params);
 
@@ -64,10 +65,12 @@ const ImagePreview = ({route}) => {
   const handleSendImage = url => {
     const messageObj = {
       message: url,
-      imgMessage: imageText ? imageText : '',
+      amount: amount ? amount : 0,
+      remarks: remarks ? remarks : '',
       senderId: user?.userId,
       image: user?.image ? user?.image : '',
       fullName: user?.fullName,
+      isPaid: false,
       roomPath,
       mediaType: 'image',
     };
@@ -155,13 +158,13 @@ const ImagePreview = ({route}) => {
               placeholder="Amount"
               placeholderTextColor={'grey'}
               style={styles.TextInputContainer}
-              onChange={text => setImageText(text?.nativeEvent?.text)}
+              onChange={text => setAmount(text?.nativeEvent?.text)}
             />
             <TextInput
               placeholder="Remarks"
               placeholderTextColor={'grey'}
               style={styles.TextInputContainer}
-              onChange={text => setImageText(text?.nativeEvent?.text)}
+              onChange={text => setRemarks(text?.nativeEvent?.text)}
             />
             <TouchableOpacity
               onPress={() => handleImageUpload()}

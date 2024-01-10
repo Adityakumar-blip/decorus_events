@@ -103,15 +103,18 @@ export const SendMessageByRoom = createAsyncThunk(
   async (values, {dispatch}) => {
     console.log('messages values', values);
     try {
-      firestore()
-        .collection(values?.roomPath)
-        .doc()
+      const newDocRef = firestore().collection(values?.roomPath).doc();
+
+      newDocRef
         .set({
+          messageId: newDocRef.id,
           message: values.message,
-          imgMessage: values?.imgMessage ? values?.imgMessage : '',
+          amount: values?.amount ? Number(values?.amount) : 0,
+          remarks: values?.remarks ? values?.remarks : '',
           createdAt: new Date(),
           senderId: values?.senderId,
           fullName: values?.fullName,
+          isPaid: values?.isPaid ? values?.isPaid : false,
           mediaType: values?.mediaType ? values?.mediaType : 'text',
         })
         .then(() => {

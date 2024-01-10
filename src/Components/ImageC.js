@@ -7,7 +7,8 @@ import {
   PermissionsAndroid,
   Platform,
   TouchableOpacity,
-  ActivityIndicator, // Import ActivityIndicator for loader
+  ActivityIndicator,
+  Alert, // Import ActivityIndicator for loader
 } from 'react-native';
 import storage from '@react-native-firebase/storage';
 import useImagePicker from './useImagePicker';
@@ -76,6 +77,7 @@ export default function ImageC({source, style, imageStyle, onChange, ...rest}) {
             console.log('You can use the media');
           } else {
             console.log('Media permission denied');
+            Alert.alert('Error', 'You dont have storage permission');
           }
         } else if (Platform.OS === 'ios') {
           if (filePath && filePath.uri) {

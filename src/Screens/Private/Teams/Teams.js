@@ -53,7 +53,7 @@ const Teams = () => {
         header: item?.groupName,
         membersCount: membersLength,
         item,
-        imageUrl: item?.imageUrl,
+        imageUrl: item?.image,
       });
     } catch (error) {
       console.error('Error fetching members:', error);
@@ -91,8 +91,8 @@ const Teams = () => {
             }}>
             <Image
               source={{
-                uri: item?.imageUrl
-                  ? item?.imageUrl
+                uri: item?.image
+                  ? item?.image
                   : 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=60&w=500&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDB8fGdyb3VwfGVufDB8fDB8fHww',
               }}
               height={60}

@@ -20,6 +20,8 @@ export default function TabHeader({
   imageUrl,
 }) {
   const navigation = useNavigation();
+
+  console.log('Imge url', imageUrl);
   return (
     <View style={styles.HeaderConatiner}>
       <View style={styles.Header}>

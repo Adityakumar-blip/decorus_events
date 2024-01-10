@@ -31,6 +31,8 @@ import {BottomSheet} from '../../../Components/UPIFound';
 // import RNQRGenerator from 'rn-qr-generator';
 import {CameraKitCamera} from 'react-native-camera-kit';
 import RNFS from 'react-native-fs';
+import CheckBox from '@react-native-community/checkbox';
+import {PaymentsByRoom} from '../../../Utils/Slices/ExpenseSlice';
 
 export default function ChatRoom(props) {
   const dispatch = useDispatch();
@@ -46,6 +48,7 @@ export default function ChatRoom(props) {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [speed, setSpeed] = useState(0);
+  const [isSelected, setSelection] = useState(false);
   const bounceValue = useRef(new Animated.Value(150)).current;
 
   console.log('showbottomsheet', showBottomSheet);
@@ -163,7 +166,6 @@ export default function ChatRoom(props) {
     const sender = item?.senderId === user?.userId;
     const isImageType =
       item?.mediaType && item?.mediaType === 'image' ? true : false;
-    // console.log("chat items", item);
     if (item.isDelete) {
       return null;
     }
@@ -187,7 +189,7 @@ export default function ChatRoom(props) {
                   </TouchableOpacity>
                 )}
                 {item?.mediaType === 'image' ? (
-                  <TouchableOpacity onPress={() => ImagePreview(item?.text)}>
+                  <TouchableOpacity onPress={() => ImagePreview(item?.message)}>
                     <Image
                       source={{uri: item?.message}}
                       style={{
@@ -198,9 +200,43 @@ export default function ChatRoom(props) {
                         marginTop: 2,
                       }}
                     />
-                    {item?.imgMessage && (
-                      <Text style={{color: 'white'}}>{item?.imgMessage}</Text>
-                    )}
+                    <View
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}>
+                      {user?.role === 'admin' && (
+                        <CheckBox
+                          value={item?.isPaid}
+                          onValueChange={event =>
+                            handlePaymentChange({...item, event})
+                          }
+                          style={{alignSelf: 'center'}}
+                        />
+                      )}
+                      <Text style={{color: sender ? 'white' : 'black'}}>
+                        {item?.isPaid ? 'Paid' : 'Unpaid'}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyItems: 'center',
+                        gap: 10,
+                      }}>
+                      {item?.amount && (
+                        <Text style={{color: sender ? 'white' : 'black'}}>
+                          Amount: {item?.amount}
+                        </Text>
+                      )}
+                      {item?.remarks && (
+                        <Text style={{color: sender ? 'white' : 'black'}}>
+                          Remarks: {item?.remarks}
+                        </Text>
+                      )}
+                    </View>
                   </TouchableOpacity>
                 ) : (
                   <Text
@@ -261,12 +297,14 @@ export default function ChatRoom(props) {
   };
 
   const ImagePreview = file => {
-    props.navigation.navigate(ScreenName.ImagePreview, {
+    console.log('Image Preview', file);
+    props.navigation.navigate('ImagePreview', {
       fileUri: file,
       path: roomPath,
-      group: group,
+      group: item,
       type: 'preview',
       mediaType: 'image',
+      headerName: HeaderName,
     });
   };
 
@@ -278,6 +316,46 @@ export default function ChatRoom(props) {
 
   const hide = () => {
     setShowBottomSheet(false);
+  };
+
+  const handlePaymentChange = item1 => {
+    try {
+      console.log('is paid', item1);
+      const messagePath = `chats/${item?.groupId}/messages`;
+      console.log('Message path', messagePath);
+      console.log('Group Item Data', item);
+
+      // Update the document and then get the updated data
+      firestore()
+        .collection(messagePath)
+        .doc(item1?.messageId)
+        .update({isPaid: item1?.event})
+        .then(() => {
+          // Retrieve the updated document
+          return firestore()
+            .collection(messagePath)
+            .doc(item1?.messageId)
+            .get();
+        })
+        .then(updatedDoc => {
+          // Access the updated data
+          const updatedData = updatedDoc.data();
+          console.log('roompath', updatedData);
+          const paymentPath = `expenses/${item.groupId}`;
+          const paymentObj = {
+            path: paymentPath,
+            item,
+            amount: updatedData.amount,
+          };
+          dispatch(PaymentsByRoom(paymentObj));
+          console.log('Updated Payment Data', updatedData);
+        })
+        .catch(error => {
+          console.log('Error retrieving updated data', error);
+        });
+    } catch (error) {
+      console.log('Message updated error', error);
+    }
   };
   return (
     <>

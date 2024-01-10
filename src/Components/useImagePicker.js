@@ -52,8 +52,8 @@ const useImagePicker = () => {
   const capture = async type => {
     let options = {
       mediaType: type,
-      maxWidth: 300,
-      maxHeight: 550,
+      // maxWidth: 300,
+      // maxHeight: 550,
       quality: 1,
       videoQuality: 'low',
       durationLimit: 60, //Video max duration in seconds

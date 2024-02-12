@@ -1,4 +1,4 @@
-import {Text, View} from 'react-native';
+import {Text, View, Dimensions} from 'react-native';
 import React, {useEffect, useMemo, useState} from 'react';
 import auth from '@react-native-firebase/auth';
 import OTPInput from '../../Components/OTPInput';
@@ -60,8 +60,10 @@ export default function OTPScreen({
     };
   }, [seconds]);
 
+  const {Height} = Dimensions.get('window');
+
   return (
-    <View style={{marginBottom: 40}}>
+    <View style={{height: Height}}>
       <View style={Login.TextContainer}>
         <Text style={Login.LoginHeading}>Get Verification</Text>
         <Text style={Login.LoginPara}>

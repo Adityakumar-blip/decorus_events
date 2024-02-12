@@ -7,6 +7,7 @@ import {
   FlatList,
   ScrollView,
   TextInput,
+  Alert,
 } from 'react-native';
 import {TeamStyle} from '../../../Utils/Styles/TeamsStyle';
 import {useDispatch, useSelector} from 'react-redux';
@@ -22,7 +23,6 @@ const Group = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const {members} = route.params;
-  const hasImage = false;
 
   console.log('MEMBERS ', members);
 
@@ -45,6 +45,7 @@ const Group = () => {
     // if (item.userId === user.userId) {
     //   return null;
     // }
+    console.log('Contact item', item);
     return (
       <TouchableOpacity
         style={{
@@ -57,9 +58,9 @@ const Group = () => {
           paddingTop: 15,
         }}>
         <View>
-          {hasImage ? (
+          {item?.image ? (
             <Image
-              source={{uri: item.profileImage}}
+              source={{uri: item.image}}
               style={{width: 50, height: 50, borderRadius: 50}}
             />
           ) : (
@@ -96,16 +97,29 @@ const Group = () => {
     );
   };
 
+  console.log('Members', members);
+
   const handleCreateGroup = () => {
-    const Group = {
-      groupName,
-      members,
-      image: imageUrl ? imageUrl : '',
-    };
-    console.log('CHATROOM DATA IS', Group);
-    dispatch(CreateChatRooms(Group));
-    dispatch(GetAllRooms());
-    navigation.navigate('Team');
+    try {
+      const Group = {
+        groupName,
+        members,
+        image: imageUrl ? imageUrl : '',
+      };
+      dispatch(CreateChatRooms(Group));
+      dispatch(GetAllRooms());
+      navigation.navigate('Team');
+
+      // Show success alert
+      showAlert('Success', 'Group created successfully');
+    } catch (error) {
+      // Show error alert
+      showAlert('Error', 'Error creating group. Please try again.');
+    }
+  };
+
+  const showAlert = (title, message) => {
+    Alert.alert(title, message);
   };
 
   return (

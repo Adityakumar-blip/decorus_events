@@ -3,7 +3,6 @@ import {
   View,
   Image,
   StyleSheet,
-  ToastAndroid,
   PermissionsAndroid,
   Platform,
   TouchableOpacity,
@@ -14,6 +13,7 @@ import storage from '@react-native-firebase/storage';
 import useImagePicker from './useImagePicker';
 import {useSelector} from 'react-redux';
 import {isURL} from '../Utils/constants';
+import DeviceInfo from 'react-native-device-info';
 
 export default function ImageC({source, style, imageStyle, onChange, ...rest}) {
   const [imageUrl, setImageUrl] = useState(null);
@@ -44,10 +44,9 @@ export default function ImageC({source, style, imageStyle, onChange, ...rest}) {
         await task;
         onChange(`groups/${filename}`);
         clearFile();
-        ToastAndroid.show('Image uploaded successfully!', ToastAndroid.SHORT);
+        Alert.alert('Success', 'Image uploaded successfully!');
       } catch (e) {
-        console.error('Error uploading image:', e);
-        ToastAndroid.show('Error uploading image', ToastAndroid.SHORT);
+        Alert.alert('Error', 'Error uploading image');
       } finally {
         setUploading(false);
         setImage(null);
@@ -60,12 +59,13 @@ export default function ImageC({source, style, imageStyle, onChange, ...rest}) {
   useEffect(() => {
     const requestMediaPermission = async () => {
       try {
-        if (Platform.OS === 'android') {
+        const API_LEVEL = await DeviceInfo.getApiLevel();
+        if (Platform.OS === 'android' && API_LEVEL < 33) {
           const granted = await PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
             {
-              title: 'Decorus Needs Media Permission',
-              message: 'Decorus needs access to your camera ',
+              title: 'Decorus App Needs Media Permission',
+              message: 'Decorus App needs access to your media ',
               buttonNegative: 'Cancel',
               buttonPositive: 'OK',
             },
@@ -77,18 +77,16 @@ export default function ImageC({source, style, imageStyle, onChange, ...rest}) {
             console.log('You can use the media');
           } else {
             console.log('Media permission denied');
-            Alert.alert('Error', 'You dont have storage permission');
           }
-        } else if (Platform.OS === 'ios') {
+        } else {
           if (filePath && filePath.uri) {
             await uploadImage();
           }
         }
       } catch (err) {
-        console.warn(err);
+        console.log(err);
       }
     };
-
     requestMediaPermission();
   }, [filePath?.uri]);
 
@@ -101,7 +99,6 @@ export default function ImageC({source, style, imageStyle, onChange, ...rest}) {
           .ref('/' + source)
           .getDownloadURL()
           .then(url => {
-            console.log('FETCHED', url);
             setImageUrl(url);
             onChange(url);
           })

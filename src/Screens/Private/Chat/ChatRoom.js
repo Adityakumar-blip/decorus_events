@@ -16,6 +16,7 @@ import {
   StyleSheet,
   Animated,
   Alert,
+  Button,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
@@ -33,6 +34,8 @@ import {CameraKitCamera} from 'react-native-camera-kit';
 import RNFS from 'react-native-fs';
 import CheckBox from '@react-native-community/checkbox';
 import {PaymentsByRoom} from '../../../Utils/Slices/ExpenseSlice';
+import RNFetchBlob from 'rn-fetch-blob';
+// import ReactNativeBlobUtil from 'react-native-blob-util';
 
 export default function ChatRoom(props) {
   const dispatch = useDispatch();
@@ -51,10 +54,7 @@ export default function ChatRoom(props) {
   const [isSelected, setSelection] = useState(false);
   const bounceValue = useRef(new Animated.Value(150)).current;
 
-  console.log('showbottomsheet', showBottomSheet);
-
   const {user, session} = useSelector(({AuthSlice}) => AuthSlice);
-  console.log(user);
   // const {capture, filePath, clearFile} = useImagePicker();
 
   // useEffect(() => {
@@ -69,8 +69,6 @@ export default function ChatRoom(props) {
   //STATE
   const [Message, setMessage] = useState('');
 
-  console.log('message', Message);
-
   //ANIMATION
   const {UIManager} = NativeModules;
   UIManager.setLayoutAnimationEnabledExperimental &&
@@ -83,8 +81,6 @@ export default function ChatRoom(props) {
   const item = props?.route?.params?.item;
   const imageUrl = props?.route?.params?.imageUrl;
   // const group = props?.route?.params?.group;
-
-  console.log('Group Details', item);
 
   //onBackPress()
   const onBackPress = () => {
@@ -160,6 +156,29 @@ export default function ChatRoom(props) {
     // handleScrollToBottom();
   }, []);
 
+  // const handleDownloadImage = async FileUrl => {
+  //   // setIsLoader(true);
+  //   const {config, fs} = ReactNativeBlobUtil;
+  //   const Download = fs?.dirs?.DownloadDir;
+  //   return config({
+  //     fileCache: true,
+  //     indicator: true,
+  //     addAndroidDownloads: {
+  //       useDownloadManager: true,
+  //       notification: true,
+  //       path: Download + '/' + 'Image',
+  //     },
+  //   })
+  //     .fetch('GET', FileUrl)
+  //     .then(res => {
+  //       // setIsLoader(false);
+  //       Alert.alert('Success', 'Download successfully.');
+  //     })
+  //     .catch(error => {
+  //       Alert.alert('Success', 'Download error.');
+  //     });
+  // };
+
   const renderItem = ({item, index}) => {
     const isEnd = index === messages.length - 1;
     const isImage = isURL(item.text);
@@ -179,14 +198,34 @@ export default function ChatRoom(props) {
             <View>
               <View>
                 {!sender && (
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate('UserDetail', {
-                        userId: item?.senderId,
-                      })
-                    }>
-                    <Text style={ChatStyle.UserName}>{item?.fullName}</Text>
-                  </TouchableOpacity>
+                  <View
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('UserDetail', {
+                          userId: item?.senderId,
+                        })
+                      }>
+                      <Text style={ChatStyle.UserName}>{item?.fullName}</Text>
+                    </TouchableOpacity>
+                    {item?.mediaType === 'image' && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          handleDownloadImage(item?.message);
+                        }}>
+                        <Image
+                          source={require('../../../Assets/Images/download-black.png')}
+                          height={10}
+                          width={10}
+                        />
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 )}
                 {item?.mediaType === 'image' ? (
                   <TouchableOpacity onPress={() => ImagePreview(item?.message)}>
@@ -205,36 +244,53 @@ export default function ChatRoom(props) {
                         display: 'flex',
                         flexDirection: 'row',
                         alignItems: 'center',
-                      }}>
-                      {user?.role === 'admin' && (
-                        <CheckBox
-                          value={item?.isPaid}
-                          onValueChange={event =>
-                            handlePaymentChange({...item, event})
-                          }
-                          style={{alignSelf: 'center'}}
-                        />
-                      )}
-                      <Text style={{color: sender ? 'white' : 'black'}}>
-                        {item?.isPaid ? 'Paid' : 'Unpaid'}
-                      </Text>
-                    </View>
+                        gap: 20,
+                        marginTop: 20,
+                      }}></View>
                     <View
                       style={{
                         display: 'flex',
-                        flexDirection: 'row',
+                        flexDirection: 'column',
                         justifyItems: 'center',
                         gap: 10,
                       }}>
-                      {item?.amount && (
+                      {item?.amount !== null && (
                         <Text style={{color: sender ? 'white' : 'black'}}>
                           Amount: {item?.amount}
                         </Text>
                       )}
+
                       {item?.remarks && (
                         <Text style={{color: sender ? 'white' : 'black'}}>
                           Remarks: {item?.remarks}
                         </Text>
+                      )}
+
+                      {user?.role === 'admin' && item?.amount !== null && (
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor: '#4287f5',
+                            padding: 15,
+                            borderRadius: 10,
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                          disabled={item?.isPaid}
+                          onPress={() => {
+                            if (item?.amount > 0) {
+                              handlePaymentChange({
+                                ...item,
+                                isPaid: item?.isPaid ? false : true,
+                              });
+                            } else {
+                              Alert.alert('Error', 'Amount is not available');
+                            }
+                          }}>
+                          <Text style={{color: 'white', fontWeight: 600}}>
+                            {item?.isPaid ? 'Paid' : 'Mark as paid'}
+                          </Text>
+                        </TouchableOpacity>
                       )}
                     </View>
                   </TouchableOpacity>
@@ -297,7 +353,6 @@ export default function ChatRoom(props) {
   };
 
   const ImagePreview = file => {
-    console.log('Image Preview', file);
     props.navigation.navigate('ImagePreview', {
       fileUri: file,
       path: roomPath,
@@ -320,16 +375,13 @@ export default function ChatRoom(props) {
 
   const handlePaymentChange = item1 => {
     try {
-      console.log('is paid', item1);
       const messagePath = `chats/${item?.groupId}/messages`;
-      console.log('Message path', messagePath);
-      console.log('Group Item Data', item);
 
       // Update the document and then get the updated data
       firestore()
         .collection(messagePath)
         .doc(item1?.messageId)
-        .update({isPaid: item1?.event})
+        .update({isPaid: item1?.isPaid})
         .then(() => {
           // Retrieve the updated document
           return firestore()
@@ -340,15 +392,17 @@ export default function ChatRoom(props) {
         .then(updatedDoc => {
           // Access the updated data
           const updatedData = updatedDoc.data();
-          console.log('roompath', updatedData);
+          console.log('updaated Data', updatedData, item1);
           const paymentPath = `expenses/${item.groupId}`;
           const paymentObj = {
             path: paymentPath,
             item,
             amount: updatedData.amount,
+            remarks: item1?.remarks,
+            isPaid: item1?.isPaid,
+            paidBy: {name: user?.fullName, userId: user?.userId},
           };
           dispatch(PaymentsByRoom(paymentObj));
-          console.log('Updated Payment Data', updatedData);
         })
         .catch(error => {
           console.log('Error retrieving updated data', error);
@@ -363,7 +417,7 @@ export default function ChatRoom(props) {
         <TabHeader
           isBackAvailable
           title={HeaderName}
-          imageUrl={imageUrl}
+          imageUrl={item?.imageUrl}
           para={`${members} members available`}
           item={item}
           onBackPress={() => onBackPress()}

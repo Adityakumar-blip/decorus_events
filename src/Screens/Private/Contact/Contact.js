@@ -7,11 +7,13 @@ import {
   FlatList,
   ScrollView,
   TextInput,
+  Alert,
 } from 'react-native';
 import {TeamStyle} from '../../../Utils/Styles/TeamsStyle';
 import {useDispatch, useSelector} from 'react-redux';
 import {GetAllUser} from '../../../Utils/Slices/UserSlice';
 import {useNavigation} from '@react-navigation/native';
+import {AddMembers} from '../../../Utils/Slices/ChatSlice';
 
 const Contact = ({route}) => {
   const dispatch = useDispatch();
@@ -59,6 +61,8 @@ const Contact = ({route}) => {
   const isSelected = item => {
     return selectedUsers.some(user => user.userId === item.userId);
   };
+
+  console.log('Selected users', selectedUsers);
 
   useEffect(() => {
     dispatch(GetAllUser());
@@ -136,11 +140,31 @@ const Contact = ({route}) => {
     }
   };
 
+  const handleAddMembers = () => {
+    if (selectedUsers) {
+      dispatch(AddMembers({id: groupId, members: selectedUsers})).then(() => {
+        navigation.navigate('Team');
+        Alert.alert('Success', 'Member added succesfully');
+      });
+    }
+  };
   console.log('selected users', selectedUsers);
+  const onBackPress = () => {
+    navigation.goBack();
+  };
+
+  const handleAddToGroup = () => {
+    try {
+    } catch (error) {}
+  };
 
   return (
     <View style={{flex: 1, backgroundColor: 'white'}}>
       <View style={TeamStyle.TeamHeader}>
+        <TouchableOpacity onPress={() => onBackPress()}>
+          <Image source={require('../../../Assets/Images/back_blue.png')} />
+        </TouchableOpacity>
+
         <Text style={{fontSize: 32, fontWeight: '700', color: '#4369F6'}}>
           Contacts
         </Text>
@@ -247,7 +271,7 @@ const Contact = ({route}) => {
               }
         }
         onPress={() => {
-          handleGroup();
+          groupId ? handleAddMembers() : handleGroup();
         }}>
         {groupId ? (
           <Text style={{color: 'white', fontWeight: '600', fontSize: 18}}>

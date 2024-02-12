@@ -5,6 +5,7 @@ import LoginScreen from '../Screens/Public/LoginScreen';
 import BottomNavigation from './BottomNavigation';
 import ChatRoom from '../Screens/Private/Chat/ChatRoom';
 import SplashScreen from '../Screens/Public/SplashScreen';
+import LoginWithEmail from '../Screens/Public/LoginWithEmail';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,11 @@ const StackNavigator = () => {
       <Stack.Screen
         name="LoginScreen"
         component={LoginScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="LoginWithEmail"
+        component={LoginWithEmail}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

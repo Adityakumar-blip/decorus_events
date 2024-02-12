@@ -10,6 +10,7 @@ import {BillStyle} from '../../../Utils/Styles/BillStyles';
 import BillComponent from '../../../Components/BillComponent';
 import BillHistory from '../../../Components/BillHistory';
 import SalaryComponent from '../../../Components/SalaryComponent';
+import SalaryHistory from '../../../Components/SalaryHistory';
 
 const CreateSlips = () => {
   const [activeButton, setActiveButton] = useState('CreateSlips');
@@ -54,7 +55,11 @@ const CreateSlips = () => {
             </Text>
           </TouchableOpacity>
         </View>
-        {activeButton === 'CreateSlips' ? <SalaryComponent /> : <BillHistory />}
+        {activeButton === 'CreateSlips' ? (
+          <SalaryComponent />
+        ) : (
+          <SalaryHistory />
+        )}
       </View>
     </ScrollView>
   );

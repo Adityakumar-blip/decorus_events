@@ -43,39 +43,6 @@ const BillComponent = ({item}) => {
   const [loading, setLoading] = useState(false);
   const [isIgst, setIsIgst] = useState(false);
 
-  useEffect(() => {
-    if (pdfUrl) {
-      const uploadToStorage = async () => {
-        try {
-          const reference = storage().ref(
-            `/invoices/${formik.values.Client}_invoice.pdf`,
-          );
-          await reference.putFile(pdfUrl);
-
-          const downloadURL = await reference.getDownloadURL();
-          console.log('Download URL', downloadURL);
-
-          dispatch(
-            UploadBills({
-              ...formik.values,
-              groupId: item?.groupId,
-              groupName: item?.groupName,
-              invoiceUrl: downloadURL,
-            }),
-          );
-          setLoading(false);
-          Alert.alert('Success', 'PDF uploaded successfully');
-        } catch (error) {
-          console.error('Upload Error', error);
-          Alert.alert('Error', 'Failed to upload PDF');
-          setLoading(false);
-        }
-      };
-
-      uploadToStorage();
-    }
-  }, [pdfUrl]);
-
   const generatePDF = async values => {
     setLoading(true);
     try {
@@ -361,49 +328,39 @@ const BillComponent = ({item}) => {
         directory: 'Download',
       };
 
-      const storagePermission = await request(
-        PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
-      );
+      const file = await RNHTMLtoPDF.convert(options);
 
-      if (storagePermission === 'granted') {
-        const file = await RNHTMLtoPDF.convert(options);
+      const downloadDirectory = RNFS.DownloadDirectoryPath;
+      const destinationPath = `${downloadDirectory}/${values.Client}.pdf`;
 
-        const downloadDirectory = RNFS.DownloadDirectoryPath;
-        const destinationPath = `${downloadDirectory}/${formik.values.Client}.pdf`;
+      await RNFS.copyFile(file.filePath, destinationPath);
 
-        await RNFS.moveFile(file.filePath, destinationPath);
+      console.log('File path', file.filePath);
+      setPdfUrl(file.filePath);
 
-        setPdfUrl(destinationPath);
-
-        Alert.alert('Success', `PDF saved to ${destinationPath}`);
-        setLoading(false);
-      } else {
-        const file = await RNHTMLtoPDF.convert(options);
-
-        const downloadDirectory = RNFS.DownloadDirectoryPath;
-        const destinationPath = `${downloadDirectory}/${formik.values.Client}.pdf`;
-
-        await RNFS.moveFile(file.filePath, destinationPath);
-
-        setPdfUrl(destinationPath);
-
-        Alert.alert('Success', `PDF saved to ${destinationPath}`);
-        setLoading(false);
-      }
+      Alert.alert('Success', `PDF saved to ${destinationPath}`);
+      setLoading(false);
     } catch (error) {
       Alert.alert('Error', error.message);
       setLoading(false);
     }
   };
 
+  console.log('pdf url', pdfUrl);
+
   const formik = useFormik({
     initialValues,
     onSubmit: async values => {
-      setLoading(true);
-      console.log('formik values', values);
-      await generatePDF(values);
+      if (item) {
+        setLoading(true);
+        await generatePDF(values);
+      } else {
+        Alert.alert('Error', 'Please select group first');
+      }
     },
   });
+
+  console.log('Bill values', formik.values, item);
 
   const handleAddField = () => {
     formik.setValues({
@@ -424,7 +381,6 @@ const BillComponent = ({item}) => {
 
   const handleIGST = () => {
     setIsIgst(!isIgst);
-    console.log('igst', isIgst);
     const isIGSTAdded = isIgst === true;
     const isIGSTRemoved = isIgst === false;
 
@@ -436,6 +392,38 @@ const BillComponent = ({item}) => {
     }
   };
 
+  useEffect(() => {
+    if (pdfUrl) {
+      setLoading(true);
+      const uploadToStorage = async () => {
+        try {
+          const reference = storage().ref(
+            `/invoices/${formik.values.Client}_invoice.pdf`,
+          );
+          await reference.putFile(pdfUrl);
+
+          const downloadURL = await reference.getDownloadURL();
+
+          dispatch(
+            UploadBills({
+              ...formik.values,
+              groupId: item?.groupId,
+              groupName: item?.groupName,
+              invoiceUrl: downloadURL,
+            }),
+          );
+          setLoading(false);
+          Alert.alert('Success', 'PDF uploaded successfully');
+        } catch (error) {
+          console.error('Upload Error', error);
+          Alert.alert('Error', 'Failed to upload PDF');
+          setLoading(false);
+        }
+      };
+
+      uploadToStorage();
+    }
+  }, [pdfUrl]);
   return (
     <SafeAreaView>
       <View style={{padding: 15}}>
@@ -443,66 +431,79 @@ const BillComponent = ({item}) => {
           placeholder="Client"
           onChangeText={formik.handleChange('Client')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="Address"
           onChangeText={formik.handleChange('Address')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="GSTIN"
           onChangeText={formik.handleChange('GSTIN')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="Brand"
           onChangeText={formik.handleChange('Brand')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="Location"
           onChangeText={formik.handleChange('Location')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="Invoice_Number"
           onChangeText={formik.handleChange('Invoice_Number')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="Event_Date"
           onChangeText={formik.handleChange('Event_Date')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="Estimate_Number"
           onChangeText={formik.handleChange('Estimate_Number')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="PO_Number"
           onChangeText={formik.handleChange('PO_Number')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="PAN_Number"
           onChangeText={formik.handleChange('PAN_Number')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="TAN_Number"
           onChangeText={formik.handleChange('TAN_Number')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="HSNSAC"
           onChangeText={formik.handleChange('HSNSAC')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         <TextInput
           placeholder="Detail"
           onChangeText={formik.handleChange('Detail')}
           style={BillStyle.InputFields}
+          placeholderTextColor="#407BFF"
         />
         {formik.values.dynamicFields.map((field, index) => (
           <>
@@ -539,6 +540,7 @@ const BillComponent = ({item}) => {
               )}
               style={BillStyle.InputFields}
               key={index}
+              placeholderTextColor="#407BFF"
             />
             <TextInput
               placeholder="Quantity"
@@ -546,16 +548,19 @@ const BillComponent = ({item}) => {
                 `dynamicFields[${index}].quantity`,
               )}
               style={BillStyle.InputFields}
+              placeholderTextColor="#407BFF"
             />
             <TextInput
               placeholder="Rate"
               onChangeText={formik.handleChange(`dynamicFields[${index}].rate`)}
               style={BillStyle.InputFields}
+              placeholderTextColor="#407BFF"
             />
             <TextInput
               placeholder="Days"
               onChangeText={formik.handleChange(`dynamicFields[${index}].days`)}
               style={BillStyle.InputFields}
+              placeholderTextColor="#407BFF"
             />
             <TextInput
               placeholder="Amount"
@@ -563,6 +568,7 @@ const BillComponent = ({item}) => {
                 `dynamicFields[${index}].amount`,
               )}
               style={BillStyle.InputFields}
+              placeholderTextColor="#407BFF"
             />
           </>
         ))}

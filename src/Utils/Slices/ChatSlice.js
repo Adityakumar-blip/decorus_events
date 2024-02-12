@@ -14,6 +14,7 @@ const initialState = {
   allMembers: [],
   lastMessage: [],
   invoiceArray: [],
+  salaryArray: [],
 };
 
 export const CreateChatRooms = createAsyncThunk(
@@ -41,9 +42,9 @@ export const CreateChatRooms = createAsyncThunk(
           phoneNo: member.phoneNo,
           role: member.role,
           userId: member.userId,
+          image: member?.image ? member?.image : '',
         });
       }
-      console.log('Group creaated');
 
       return 'Members added successfully';
     } catch (error) {
@@ -109,7 +110,7 @@ export const SendMessageByRoom = createAsyncThunk(
         .set({
           messageId: newDocRef.id,
           message: values.message,
-          amount: values?.amount ? Number(values?.amount) : 0,
+          amount: values?.amount ? Number(values?.amount) : null,
           remarks: values?.remarks ? values?.remarks : '',
           createdAt: new Date(),
           senderId: values?.senderId,
@@ -249,9 +250,8 @@ export const UploadSalarySlips = createAsyncThunk(
       const invoiceId = groupCollection.id;
 
       await groupCollection.set({
-        groupId: values?.groupId,
-        groupName: values?.groupName,
-        invoiceId: invoiceId,
+        PayeeName: values?.FullName,
+        salaryId: invoiceId,
         slip: values?.salaryUrl,
         createdAt: new Date(),
       });
@@ -281,12 +281,52 @@ export const GetAllBills = createAsyncThunk(
   },
 );
 
+export const GetAllSalary = createAsyncThunk(
+  'GetAllSalary',
+  async (values, {dispatch}) => {
+    console.log('messages values', values);
+    try {
+      const groupCollection = salaryCollection.get();
+
+      const invoicesArray = [];
+
+      (await groupCollection).forEach(doc => {
+        invoicesArray.push(doc.data());
+      });
+
+      return invoicesArray;
+    } catch (error) {
+      console.error('error', error);
+    }
+  },
+);
+
 export const AddMembers = createAsyncThunk(
   'AddMembers',
   async (values, {dispatch}) => {
     console.log('values', values);
     try {
-      chatCollection.doc(values.id).collection('members').add({});
+      const {id, members} = values;
+
+      for (const member of members) {
+        await chatCollection.doc(id).collection('members').add(member);
+      }
+    } catch (error) {
+      console.log('Error in adding members', error);
+    }
+  },
+);
+
+export const ExitGroup = createAsyncThunk(
+  'ExitGroup',
+  async (values, {dispatch}) => {
+    console.log('values', values);
+    try {
+      chatCollection
+        .doc(values.groupId)
+        .collection('members')
+        .doc(values?.userId)
+        .delete();
     } catch (error) {
       console.log('Error in adding members', error);
     }
@@ -323,6 +363,9 @@ export const ChatSlice = createSlice({
     });
     builder.addCase(GetAllBills.fulfilled, (state, action) => {
       state.invoiceArray = action.payload;
+    });
+    builder.addCase(GetAllSalary.fulfilled, (state, action) => {
+      state.salaryArray = action.payload;
     });
     builder.addCase(updateGroup.fulfilled, (state, action) => {
       state.groupData = action.payload;

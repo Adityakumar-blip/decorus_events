@@ -43,7 +43,6 @@ const Checkout = () => {
     initialValues: initialValues,
     enableReinitialize: true,
     onSubmit: values => {
-      console.log('values', values);
       handlePayment(values);
     },
   });

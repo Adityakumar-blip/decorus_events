@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -16,13 +16,20 @@ import {BarChart, LineChart, PieChart} from 'react-native-gifted-charts';
 import SelectDropdown from 'react-native-select-dropdown';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useDispatch, useSelector} from 'react-redux';
-import {GetAllPayments} from '../../../Utils/Slices/ExpenseSlice';
+import {
+  GetAllPayments,
+  GetPaymentsByMonth,
+  MonthwiseData,
+} from '../../../Utils/Slices/ExpenseSlice';
 import Arrow from '../../../Assets/Svg/Arrow.svg';
 const {width} = Dimensions.get('window');
 
 const Payment = ({navigation}) => {
   const dispatch = useDispatch();
   const [scrollY] = useState(new Animated.Value(0));
+  const [totalParentAmount, setTotalParentAmount] = useState();
+  const [cities, setCities] = useState('');
+  const citiesDropdownRef = useRef();
 
   const headerHeight = 200;
 
@@ -36,98 +43,71 @@ const Payment = ({navigation}) => {
     [{nativeEvent: {contentOffset: {y: scrollY}}}],
     {useNativeDriver: false},
   );
-  const {payments} = useSelector(({ExpenseSlice}) => ExpenseSlice);
-  const data = [
-    {
-      value: 2500,
-      frontColor: '#006DFF',
-      gradientColor: '#009FFF',
-      spacing: 9,
-      label: 'Jan',
-    },
+  const {payments, paymentsByMonth} = useSelector(
+    ({ExpenseSlice}) => ExpenseSlice,
+  );
 
-    {
-      value: 3500,
-      frontColor: '#006DFF',
-      gradientColor: '#009FFF',
-      spacing: 9,
-      label: 'Feb',
-    },
+  console.log('Payments by months', paymentsByMonth);
 
-    {
-      value: 4500,
-      frontColor: '#006DFF',
-      gradientColor: '#009FFF',
-      spacing: 9,
-      label: 'Mar',
-    },
+  const maxValue = 100000;
+  const stepValue = 10000;
+  const noOfSections = 10;
 
-    {
-      value: 5200,
-      frontColor: '#006DFF',
-      gradientColor: '#009FFF',
-      spacing: 9,
-      label: 'Apr',
-    },
+  // Generate y-axis label texts based on maxValue and stepValue
+  const yAxisLabelTexts = Array.from({length: noOfSections + 1}, (_, index) => {
+    const value = stepValue * index;
+    return value >= 1000 ? `${value / 1000}k` : value.toString();
+  });
 
-    {
-      value: 3400,
-      frontColor: '#006DFF',
-      gradientColor: '#009FFF',
-      spacing: 9,
-      label: 'May',
-    },
-    {
-      value: 3900,
-      frontColor: '#006DFF',
-      gradientColor: '#009FFF',
-      spacing: 9,
-      label: 'Jun',
-    },
-    {
-      value: 3000,
-      frontColor: '#006DFF',
-      gradientColor: '#009FFF',
-      spacing: 9,
-      label: 'Jul',
-    },
-    {
-      value: 3100,
-      frontColor: '#006DFF',
-      gradientColor: '#009FFF',
-      spacing: 9,
-      label: 'Aug',
-    },
-    {
-      value: 2000,
-      frontColor: '#006DFF',
-      gradientColor: '#009FFF',
-      spacing: 9,
-      label: 'Sep',
-    },
-    {
-      value: 1000,
-      frontColor: '#006DFF',
-      gradientColor: '#009FFF',
-      spacing: 9,
-      label: 'Oct',
-    },
+  const data = paymentsByMonth?.map((month, index) => ({
+    value: month?.amount,
+    frontColor: '#006DFF',
+    gradientColor: '#009FFF',
+    spacing: 5,
+    label: month?.id,
+  }));
+
+  const reversedData = [...data].reverse();
+
+  useEffect(() => {
+    dispatch(GetPaymentsByMonth(setCities));
+  }, []);
+
+  const countries = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
-  const countries = ['January', 'February', 'March', 'April'];
+  const total = payments.reduce((acc, item) => acc + item.totalAmount, 0);
+  useEffect(() => {
+    setTotalParentAmount(total);
+  }, [total]);
 
   const renderRooms = ({item}) => {
     // if (item.userId === user.userId) {
     //   return null;
     // }
 
+    console.log('Payment Data', item);
+
     const handleGroupClick = item => {
       navigation.navigate('PaymentDetail', {
         item,
       });
     };
+
     return (
-      <View style={{marginHorizontal: 10}}>
+      <View style={{marginHorizontal: 10, marginVertical: 5}}>
         <TouchableOpacity
           onPress={() => handleGroupClick(item)}
           style={TeamStyle.TeamChat}>
@@ -137,24 +117,25 @@ const Payment = ({navigation}) => {
               flexDirection: 'row',
               alignItems: 'center',
               gap: 20,
+              marginBottom: 5,
             }}>
             <Image
               source={{
-                uri: item?.image
-                  ? item?.image
+                uri: item?.imageUrl
+                  ? item?.imageUrl
                   : 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=60&w=500&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDB8fGdyb3VwfGVufDB8fDB8fHww',
               }}
               height={60}
               width={60}
               style={{borderRadius: 10}}
             />
-            <View style={{marginVertical: 20}}>
+            <View>
               <Text style={{color: 'black', fontSize: 17, fontWeight: '500'}}>
                 {item?.groupName}
               </Text>
-              <Text style={{maxWidth: 250, color: 'black'}}>
+              {/* <Text style={{maxWidth: 250, color: 'black'}}>
                 {item?.fullName && `${item?.fullName}: ${item?.message}`}
-              </Text>
+              </Text> */}
             </View>
           </View>
 
@@ -171,108 +152,108 @@ const Payment = ({navigation}) => {
   };
 
   useEffect(() => {
-    dispatch(GetAllPayments());
-  }, [dispatch]);
+    dispatch(GetAllPayments(cities));
+  }, [dispatch, cities]);
 
   return (
     <View>
-      <View style={TeamStyle.TeamHeader}>
-        <Text style={{fontSize: 32, fontWeight: '700', color: '#4369F6'}}>
-          Payments
-        </Text>
-        <Image
-          source={require('../../../Assets/Images/search.png')}
-          height={20}
-          width={20}
-        />
-      </View>
-      <View
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          margin: 20,
-        }}>
-        <View>
-          <Text style={{color: '#171717', fontWeight: '600', fontSize: 15}}>
-            Total Expenses
+      <ScrollView onScroll={handleScroll} scrollEventThrottle={10}>
+        <View style={TeamStyle.TeamHeader}>
+          <Text style={{fontSize: 32, fontWeight: '700', color: '#4369F6'}}>
+            Payments
           </Text>
-          <Text style={{color: '#011A52', fontSize: 25}}>INR 90,000</Text>
+          {/* <Image
+            source={require('../../../Assets/Images/search.png')}
+            height={20}
+            width={20}
+          /> */}
         </View>
-        <View>
-          <SelectDropdown
-            data={countries}
-            onSelect={(selectedItem, index) => {
-              console.log(selectedItem, index);
-              citiesDropdownRef.current.reset();
-              setCities([]);
-              setCities(selectedItem.cities);
-            }}
-            defaultButtonText={'Select month'}
-            buttonTextAfterSelection={(selectedItem, index) => {
-              return selectedItem.title;
-            }}
-            rowTextForSelection={(item, index) => {
-              return item;
-            }}
-            buttonStyle={styles.dropdown1BtnStyle}
-            buttonTextStyle={styles.dropdown1BtnTxtStyle}
-            renderDropdownIcon={isOpened => {
-              return (
-                <FontAwesome
-                  name={isOpened ? 'chevron-up' : 'chevron-down'}
-                  color={'#444'}
-                  size={18}
-                />
-              );
-            }}
-            dropdownIconPosition={'right'}
-            dropdownStyle={styles.dropdown1DropdownStyle}
-            rowStyle={styles.dropdown1RowStyle}
-            rowTextStyle={styles.dropdown1RowTxtStyle}
-          />
-        </View>
-      </View>
-      <Animated.View
-        style={{
-          transform: [{translateY}],
-        }}>
         <View
           style={{
-            padding: 15,
+            display: 'flex',
+            flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: '#bfcdff',
+            justifyContent: 'space-between',
             margin: 20,
-            borderRadius: 20,
           }}>
-          <BarChart
-            data={data}
-            barWidth={20}
-            initialSpacing={1}
-            spacing={20}
-            barBorderRadius={10}
-            showGradient
-            yAxisThickness={0}
-            xAxisType={'dashed'}
-            xAxisColor={'white'}
-            yAxisTextStyle={{color: 'white'}}
-            stepValue={1000}
-            maxValue={6000}
-            noOfSections={6}
-            yAxisLabelTexts={['0', '1k', '2k', '3k', '4k', '5k', '6k']}
-            labelWidth={40}
-            isAnimated
-            xAxisLabelTextStyle={{color: 'white', textAlign: 'center'}}
-          />
+          <View>
+            <Text style={{color: '#171717', fontWeight: '600', fontSize: 15}}>
+              Total Expenses
+            </Text>
+            <Text style={{color: '#011A52', fontSize: 25}}>
+              {totalParentAmount} INR
+            </Text>
+          </View>
+          <View>
+            <SelectDropdown
+              data={countries}
+              onSelect={(selectedItem, index) => {
+                setCities(selectedItem);
+                return selectedItem;
+              }}
+              defaultButtonText={'Select month'}
+              buttonTextAfterSelection={(selectedItem, index) => {
+                return selectedItem;
+              }}
+              rowTextForSelection={(item, index) => {
+                return item;
+              }}
+              buttonStyle={styles.dropdown1BtnStyle}
+              buttonTextStyle={styles.dropdown1BtnTxtStyle}
+              renderDropdownIcon={isOpened => {
+                return (
+                  <FontAwesome
+                    name={isOpened ? 'chevron-up' : 'chevron-down'}
+                    color={'#444'}
+                    size={18}
+                  />
+                );
+              }}
+              dropdownIconPosition={'right'}
+              dropdownStyle={styles.dropdown1DropdownStyle}
+              rowStyle={styles.dropdown1RowStyle}
+              rowTextStyle={styles.dropdown1RowTxtStyle}
+            />
+          </View>
         </View>
-      </Animated.View>
-      <ScrollView onScroll={handleScroll} scrollEventThrottle={16}>
+        <Animated.View
+          style={{
+            transform: [{translateY}],
+          }}>
+          <View
+            style={{
+              padding: 15,
+              alignItems: 'center',
+              backgroundColor: '#bfcdff',
+              margin: 20,
+              borderRadius: 20,
+            }}>
+            <BarChart
+              data={reversedData}
+              barWidth={20}
+              initialSpacing={1}
+              spacing={25}
+              barBorderRadius={10}
+              showGradient
+              yAxisThickness={0}
+              xAxisType={'dashed'}
+              xAxisColor={'white'}
+              yAxisTextStyle={{color: 'white'}}
+              stepValue={stepValue}
+              maxValue={maxValue}
+              noOfSections={noOfSections}
+              yAxisLabelTexts={yAxisLabelTexts}
+              labelWidth={25}
+              isAnimated
+              xAxisLabelTextStyle={{color: 'white', textAlign: 'center'}}
+            />
+          </View>
+        </Animated.View>
+
         <View style={PaymentStyle.PaymentT}>
           <Text style={{color: 'black', fontWeight: '600', fontSize: 19}}>
             Team Transactions
           </Text>
-          <Text style={{color: 'black'}}>See All</Text>
         </View>
         <FlatList
           data={payments}

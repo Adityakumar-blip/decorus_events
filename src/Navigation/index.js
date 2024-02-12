@@ -28,6 +28,8 @@ const Index = () => {
     return subscriber;
   }, []);
 
+  console.log('Session', session);
+
   return (
     <NavigationContainer>
       {session ? <BottomNavigation /> : <StackNavigator />}

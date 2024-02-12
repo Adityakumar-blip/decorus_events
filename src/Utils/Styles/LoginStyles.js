@@ -1,35 +1,39 @@
-const { StyleSheet } = require("react-native");
+const {StyleSheet} = require('react-native');
 
 export const Login = StyleSheet.create({
-   LoginContainer :{
+  LoginContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
+    //  backgroundColor: 'white',
     padding: 25,
-    marginBottom : 30
-   }, 
-   LoginImage  :{
+    marginBottom: 30,
+    height: '100%',
+  },
+  LoginImage: {
     width: 250,
     height: 250,
     marginBottom: 20,
-   },
-   TextContainer :{
+  },
+  TextContainer: {
     width: '100%',
     marginBottom: 20,
-   },
-   LoginHeading :{
+    //  flexGrow: 1,
+    //  height: 100,
+  },
+  LoginHeading: {
     fontSize: 24,
     textAlign: 'left',
     marginBottom: 10,
     fontWeight: 'bold',
-   },
-   LoginPara  :{
+    color: 'grey',
+  },
+  LoginPara: {
     textAlign: 'left',
     fontSize: 16,
     color: '#333',
-   },
-   InputFields : {
+  },
+  InputFields: {
     width: '100%',
     padding: 15,
     borderWidth: 1,
@@ -41,18 +45,17 @@ export const Login = StyleSheet.create({
     fontSize: 12.988,
     fontWeight: '700',
     letterSpacing: 0.26,
-   },
-   OtpButton : {
+  },
+  OtpButton: {
     backgroundColor: '#4287f5',
     padding: 15,
     borderRadius: 10,
     width: '100%',
     alignItems: 'center',
     marginTop: 10,
-    
-   },
-   ButtonText :{
+  },
+  ButtonText: {
     color: 'white',
     fontWeight: 'bold',
-   }
-})
+  },
+});

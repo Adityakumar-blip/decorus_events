@@ -8,11 +8,13 @@ import {
   TextInput,
   FlatList,
   ScrollView,
+  Alert,
 } from 'react-native';
 import {TeamStyle} from '../../../Utils/Styles/TeamsStyle';
 import ImageC from '../../../Components/ImageC';
 import {useDispatch, useSelector} from 'react-redux';
 import {
+  ExitGroup,
   GetMediaByRoom,
   getAllMembers,
   getGroup,
@@ -31,14 +33,11 @@ const GroupDescription = ({route}) => {
   const {groupData, groupMedia, allMedia, allMembers} = useSelector(
     ({ChatSlice}) => ChatSlice,
   );
-
-  console.log('GROUP DATA JSHJHKDJSHJD0', allMembers);
+  const {session, user} = useSelector(({AuthSlice}) => AuthSlice);
 
   const groupId = route?.params?.item?.groupId;
   const imageUrl = route?.params?.item?.imageUrl;
   const item = route?.params?.item;
-
-  console.log('Group Details', item);
 
   useEffect(() => {
     if (groupId) {
@@ -91,6 +90,20 @@ const GroupDescription = ({route}) => {
     navigation.navigate('Contacts', {groupId});
   };
 
+  const handleExitGroup = () => {
+    try {
+      const groupObj = {
+        groupId: groupId,
+        userId: user?.userId,
+      };
+      dispatch(ExitGroup(groupObj));
+      Alert.alert('Success', 'Group Exited Successfully');
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong');
+    }
+  };
+
+  console.log('All Members', allMembers);
   return (
     <>
       <ScrollView>
@@ -127,7 +140,7 @@ const GroupDescription = ({route}) => {
                           dispatch(
                             updateGroup({
                               groupId,
-                              updatedUserData: {image: url},
+                              updatedUserData: {imageUrl: url},
                             }),
                           );
                         })
@@ -163,10 +176,10 @@ const GroupDescription = ({route}) => {
                     display: 'flex',
                     color: 'white',
                   }}>
-                  <Image
+                  {/* <Image
                     source={require('../../../Assets/Images/edit.png')}
                     style={{height: 20, width: 20}}
-                  />
+                  /> */}
                 </View>
               </TouchableOpacity>
             </View>
@@ -211,7 +224,7 @@ const GroupDescription = ({route}) => {
                   </Text>
                 )}
               </View>
-              <Text style={{color: 'white'}}>Team Leader</Text>
+              {/* <Text style={{color: 'white'}}>Team Leader</Text>
               <Text
                 style={{
                   color: 'white',
@@ -220,7 +233,7 @@ const GroupDescription = ({route}) => {
                   fontWeight: '300',
                 }}>
                 Sarvesh Sharma (+919999200034)
-              </Text>
+              </Text> */}
               <View>
                 <View
                   style={{
@@ -230,7 +243,7 @@ const GroupDescription = ({route}) => {
                     marginTop: 10,
                   }}>
                   <Text style={{color: 'white'}}>Team Media</Text>
-                  <Text style={{color: 'white'}}>Edit</Text>
+                  {/* <Text style={{color: 'white'}}>Edit</Text> */}
                 </View>
                 <FlatList
                   data={allMedia}
@@ -245,41 +258,46 @@ const GroupDescription = ({route}) => {
 
           <View style={{marginHorizontal: 20, paddingVertical: 10}}>
             <Text style={{color: 'black', fontWeight: 700}}>Team Members</Text>
-            {allMembers?.map((item, index) => (
-              <View
-                style={{
-                  marginTop: 20,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 40,
-                }}
-                key={index}>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {allMembers?.map((item, index) => (
                 <View
                   style={{
+                    marginTop: 20,
                     display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}>
-                  <Image
-                    source={{
-                      uri: item?.image,
-                    }}
+                    flexDirection: 'column',
+                    gap: 40,
+                    overflow: 'auto',
+                  }}
+                  key={index}>
+                  <View
                     style={{
-                      height: 50,
-                      width: 50,
-                      borderRadius: 10,
-                      marginRight: 10,
-                    }}
-                  />
-                  <View>
-                    <Text style={{color: 'black', fontWeight: 600}}>
-                      {item?.fullName}
-                    </Text>
-                    <Text>+91 {item?.phoneNo}</Text>
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}>
+                    <Image
+                      source={{
+                        uri: item?.image
+                          ? item?.image
+                          : 'https://img.freepik.com/free-vector/isolated-young-handsome-man-different-poses-white-background-illustration_632498-859.jpg?size=626&ext=jpg&ga=GA1.1.639824445.1704992900&semt=ais',
+                      }}
+                      style={{
+                        height: 50,
+                        width: 50,
+                        borderRadius: 10,
+                        marginRight: 10,
+                      }}
+                    />
+                    <View>
+                      <Text style={{color: 'black', fontWeight: 600}}>
+                        {item?.fullName}
+                      </Text>
+                      <Text style={{color: 'grey'}}>+91 {item?.phoneNo}</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            ))}
+              ))}
+            </ScrollView>
           </View>
         </View>
       </ScrollView>
@@ -315,7 +333,8 @@ const GroupDescription = ({route}) => {
             justifyContent: 'center',
             alignItems: 'center',
             paddingVertical: 15,
-          }}>
+          }}
+          onPress={() => handleExitGroup()}>
           <Text style={{color: 'red'}}>Exit Group</Text>
         </TouchableOpacity>
       </View>

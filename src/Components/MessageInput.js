@@ -126,35 +126,45 @@ export default function MessageInput({
   }, [filePath]);
 
   return (
-    <View style={styles.Container}>
-      <TextInput
-        value={value}
-        style={styles.TextInputContainer}
-        placeholder="Enter Your Message"
-        placeholderTextColor={'grey'}
-        onChange={text => onChange && onChange(text?.nativeEvent?.text)}
-      />
-      <TouchableOpacity onPress={() => setBottomSheetVisible(true)}>
+    <View
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        position: 'relative',
+      }}>
+      <View style={styles.Container}>
+        <TextInput
+          value={value}
+          style={styles.TextInputContainer}
+          placeholder="Enter Your Message"
+          placeholderTextColor={'grey'}
+          onChange={text => onChange && onChange(text?.nativeEvent?.text)}
+        />
+
+        <BottomSheet
+          visible={bottomSheetVisible}
+          onBackButtonPress={() => setBottomSheetVisible(false)}
+          onBackdropPress={() => setBottomSheetVisible(false)}>
+          <View style={styles.bottomSheet}>
+            <TouchableOpacity onPress={() => launchNativeImageLibrary()}>
+              <Image source={require('../Assets/Images/image.png')} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleOpenCamera()}>
+              <Image source={require('../Assets/Images/camera_2.png')} />
+            </TouchableOpacity>
+          </View>
+        </BottomSheet>
+      </View>
+      <TouchableOpacity
+        onPress={() => setBottomSheetVisible(true)}
+        style={{position: 'absolute', right: -60}}>
         <Image
           height={10}
           width={10}
           source={require('../Assets/Images/attach-file.png')}
         />
       </TouchableOpacity>
-
-      <BottomSheet
-        visible={bottomSheetVisible}
-        onBackButtonPress={() => setBottomSheetVisible(false)}
-        onBackdropPress={() => setBottomSheetVisible(false)}>
-        <View style={styles.bottomSheet}>
-          <TouchableOpacity onPress={() => launchNativeImageLibrary()}>
-            <Image source={require('../Assets/Images/image.png')} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleOpenCamera()}>
-            <Image source={require('../Assets/Images/camera_2.png')} />
-          </TouchableOpacity>
-        </View>
-      </BottomSheet>
     </View>
   );
 }

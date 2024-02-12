@@ -42,7 +42,7 @@ export default StyleSheet.create({
     height: '100%',
   },
   RightMessageView: {
-    backgroundColor: '#6583F3',
+    backgroundColor: '#89b7e1',
     width: 'auto',
     maxWidth: 300,
     borderRadius: 10,

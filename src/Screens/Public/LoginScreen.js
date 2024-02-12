@@ -202,7 +202,7 @@ const LoginScreen = () => {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setLogin(!login)}>
+        {/* <TouchableOpacity onPress={() => setLogin(!login)}>
           {login ? (
             <Text style={{color: 'black', paddingTop: 20}}>
               New user ? Signup
@@ -212,7 +212,7 @@ const LoginScreen = () => {
               Already have an account? Login
             </Text>
           )}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </KeyboardAvoidingView>
     </ScrollView>
   );

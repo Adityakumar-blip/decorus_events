@@ -7,7 +7,7 @@ import {
   Text,
   Image,
   ActivityIndicator,
-  ToastAndroid,
+  Alert,
 } from 'react-native';
 import {BillStyle} from '../../../Utils/Styles/BillStyles';
 import {BankStyle} from '../../../Utils/Styles/BankStyles';
@@ -31,7 +31,7 @@ const BankDetails = ({route}) => {
   const bank = route?.params?.bank;
 
   const showToast = () => {
-    ToastAndroid.show('Bank details added successfully', ToastAndroid.LONG);
+    Alert.alert('Success', 'Bank details added successfully');
   };
 
   const formik = useFormik({

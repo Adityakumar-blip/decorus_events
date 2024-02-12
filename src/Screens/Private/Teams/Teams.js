@@ -77,6 +77,8 @@ const Teams = () => {
     // if (item.userId === user.userId) {
     //   return null;
     // }
+
+    console.log('Room based on user id', item);
     return (
       <View style={{marginHorizontal: 10}}>
         <TouchableOpacity
@@ -91,8 +93,8 @@ const Teams = () => {
             }}>
             <Image
               source={{
-                uri: item?.image
-                  ? item?.image
+                uri: item?.imageUrl
+                  ? item?.imageUrl
                   : 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=60&w=500&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDB8fGdyb3VwfGVufDB8fDB8fHww',
               }}
               height={60}

@@ -22,7 +22,6 @@ export const GetAllUser = createAsyncThunk('GetAllUser', async () => {
 export const getUserById = createAsyncThunk(
   'getUserById',
   async (values, {rejectWithValue}) => {
-    console.log('Users', values);
     try {
       const usersList = await usersCollection
         .where('userId', '==', values)

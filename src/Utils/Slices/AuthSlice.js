@@ -69,17 +69,21 @@ export const UpdateUser = createAsyncThunk('UpdateUser', async values => {
 });
 
 export const loginUserWithEmail = createAsyncThunk(
-  'getUser',
+  'LoginWithEmail',
   async (values, {rejectWithValue}) => {
     try {
+      console.log('In Login function');
       const usersDoc = await usersCollection
         .where('email', '==', values.email)
         .get();
+
+      console.log(usersDoc);
 
       if (!usersDoc.empty) {
         const user = usersDoc.docs[0].data();
 
         if (user.password === values.password) {
+          console.log(user);
           return user;
         } else {
           console.log('Password not matched');
@@ -103,6 +107,9 @@ export const AuthSlice = createSlice({
     setSession: (state, action) => {
       state.session = action?.payload;
     },
+    setUser: (state, action) => {
+      state.user = action.payload;
+    },
   },
   extraReducers: builder => {
     builder.addCase(GetUser.fulfilled, (state, action) => {
@@ -115,5 +122,5 @@ export const AuthSlice = createSlice({
   },
 });
 
-export const {setSession} = AuthSlice.actions;
+export const {setSession, setUser} = AuthSlice.actions;
 export default AuthSlice.reducer;

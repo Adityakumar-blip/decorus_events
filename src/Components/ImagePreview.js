@@ -14,6 +14,7 @@ import {
   Modal,
   StyleSheet,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import storage from '@react-native-firebase/storage';
@@ -36,16 +37,13 @@ const ImagePreview = ({route}) => {
   const [showIcon, setShowIcon] = useState(false);
   const [amount, setAmount] = useState(0);
   const [remarks, setRemarks] = useState('');
-
-  console.log('ROUTE PARAMS IN HEADER', route?.params);
+  const [loading, setLoading] = useState(false);
 
   const roomPath = route?.params?.path;
   const header = route?.params?.headerName;
   const membersCount = route?.params?.members;
   const type = route?.params?.type;
   const mediaType = route?.params?.mediaType;
-
-  console.log('HEADER', header);
 
   // const Decode = () => {
   //   RNQRGenerator.detect({
@@ -87,6 +85,7 @@ const ImagePreview = ({route}) => {
 
   const handleImageUpload = async () => {
     try {
+      setLoading(true);
       const {fileUri} = route?.params;
       const filename = `${session?.uid}_${Date.now()}`;
       const uploadUri =
@@ -108,6 +107,8 @@ const ImagePreview = ({route}) => {
           });
       } catch (e) {
         console.error(e);
+      } finally {
+        setLoading(false);
       }
     } catch (error) {
       console.error(error);
@@ -174,6 +175,11 @@ const ImagePreview = ({route}) => {
           </View>
         )}
       </View>
+      {loading && (
+        <View style={styles.blurOverlay}>
+          <ActivityIndicator size="large" color="#ffffff" />
+        </View>
+      )}
     </View>
   );
 };
@@ -185,7 +191,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backdropFilter: 'blur(100px)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',

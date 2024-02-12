@@ -16,6 +16,14 @@ import RNFS from 'react-native-fs';
 import Share from 'react-native-share';
 
 const BillHistory = ({data}) => {
+  const dispatch = useDispatch();
+
+  const {invoiceArray} = useSelector(({ChatSlice}) => ChatSlice);
+
+  useEffect(() => {
+    dispatch(GetAllBills());
+  }, []);
+
   const downloadFile = async (url, fileName) => {
     try {
       const fileDest = `${RNFS.DocumentDirectoryPath}/${fileName}`;
@@ -26,19 +34,17 @@ const BillHistory = ({data}) => {
 
       const downloadResult = await RNFS.downloadFile(options).promise;
 
-      console.log('Download result', downloadResult);
-
       if (downloadResult.statusCode === 200) {
         Alert.alert('Success', `File downloaded to ${fileDest}`);
       } else {
         Alert.alert('Error', 'Failed to download the file');
       }
     } catch (error) {
-      console.error('Error downloading file:', error);
       Alert.alert('Error', error.message);
     }
   };
 
+  console.log('DAta in bill history', data);
   const shareFile = async (filePath, fileName) => {
     try {
       const options = {
@@ -55,7 +61,6 @@ const BillHistory = ({data}) => {
   };
 
   const renderItem = ({item, index}) => {
-    console.log('item', item);
     return (
       <View style={HistoryStyles.Bills}>
         <View
@@ -76,7 +81,9 @@ const BillHistory = ({data}) => {
         </View>
         <View>
           <Text style={HistoryStyles.BillHeading}>{item?.groupName}</Text>
-          <Text style={HistoryStyles.BillTime}>1 Oct 2023|12:30 pm</Text>
+          <Text style={HistoryStyles.BillTime}>
+            {item.createdAt.toDate().toLocaleString()}
+          </Text>
         </View>
         <TouchableOpacity
           style={{
@@ -105,7 +112,7 @@ const BillHistory = ({data}) => {
             justifyContent: 'center',
             alignItems: 'center',
           }}
-          onPress={() => shareFile(item?.invoice)}>
+          onPress={() => shareFile(item?.invoice, item?.groupName)}>
           <Image
             source={require('../Assets/Images/share.png')}
             height={10}
@@ -124,7 +131,7 @@ const BillHistory = ({data}) => {
         <Text>See All</Text>
       </View>
       <FlatList
-        data={data}
+        data={invoiceArray}
         keyExtractor={(item, index) => index.toString()}
         renderItem={renderItem}
       />

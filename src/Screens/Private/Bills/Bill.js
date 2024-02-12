@@ -22,6 +22,8 @@ const CreateBill = ({route}) => {
   useEffect(() => {
     dispatch(GetAllBills());
   }, []);
+
+  console.log('Invoice array', invoiceArray);
   return (
     <ScrollView>
       <View>

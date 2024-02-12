@@ -104,14 +104,14 @@ const Profile = () => {
             <ImageC
               source={user?.image}
               onChange={url => {
-                dispatch(updateGroup({image: url}));
+                dispatch(UpdateUser({image: url}));
               }}
               resizeMode="contain"
             />
           </View>
           <View>
             <Text style={ProfileStyle.Username}>{user?.fullName}</Text>
-            <Text style={{color: 'black'}}>Admin</Text>
+            <Text style={{color: 'black'}}>{user?.role}</Text>
           </View>
           {/* <TouchableOpacity>
             <Image source={require('../../../Assets/Images/pencil.png')} />
